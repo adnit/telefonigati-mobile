@@ -1,16 +1,23 @@
 import Link from "next/link";
 import type { Riparim } from "@/lib/riparimet";
+import { StatusPill } from "@/components/Statusi";
 
 export function KartaRiparimi({ riparim }: { riparim: Riparim }) {
   return (
-    <article className="repair-card">
-      <h2>{riparim.pajisja}</h2>
-      <p>{riparim.problemi}</p>
-      <p>Statusi: {riparim.statusi} · Çmimi: {riparim.cmimi} €</p>
-      {riparim.shtese && <p>Kosto shtesë pret miratimin tënd.</p>}
-      <Link className="action" href={`/riparimi/${riparim.id}`}>
-        Shiko detajet
-      </Link>
-    </article>
+    <Link className="repair-card" href={`/riparimi/${riparim.id}`}>
+      <div className="repair-card__top">
+        <h2>{riparim.pajisja}</h2>
+        <StatusPill statusi={riparim.statusi} />
+      </div>
+      <p className="muted">{riparim.problemi}</p>
+      {riparim.shtese && (
+        <p className="notice">Kosto shtesë pret miratimin tënd</p>
+      )}
+      <div className="repair-card__meta">
+        <span>Dorëzuar {riparim.dorezuar}</span>
+        <span className="price">{riparim.cmimi} €</span>
+      </div>
+      <span className="repair-card__more">Shiko detajet →</span>
+    </Link>
   );
 }

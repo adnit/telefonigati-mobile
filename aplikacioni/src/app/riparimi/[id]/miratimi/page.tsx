@@ -24,17 +24,22 @@ export default async function Miratimi({
 
   return (
     <main>
-      <Link href={`/riparimi/${id}`}>← Kthehu te detajet</Link>
+      <Link className="back" href={`/riparimi/${id}`}>← Kthehu te detajet</Link>
       {riparim.shtese ? (
-        <>
+        <section className="panel panel--center">
+          <span className="badge-icon" aria-hidden="true">✓</span>
           <h1>Simulim: Miratuar</h1>
           <p>
             Miratimi i kostos shtesë (+{riparim.shtese.cmimi} €) për{" "}
             {riparim.pajisja} nuk është dërguar te servisi.
           </p>
-          <p>Ruajtjen dhe statusin real do t’i shtojmë më vonë.</p>
-        </>
-      ) : <h1>Nuk ka kosto shtesë për miratim.</h1>}
+          <p className="muted">Ruajtjen dhe statusin real do t’i shtojmë më vonë.</p>
+        </section>
+      ) : (
+        <section className="panel panel--center">
+          <h1>Nuk ka kosto shtesë për miratim.</h1>
+        </section>
+      )}
     </main>
   );
 }

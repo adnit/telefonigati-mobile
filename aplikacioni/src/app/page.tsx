@@ -23,9 +23,9 @@ export default async function Home() {
   return (
     <main>
       <h1>TelefoniGati · Riparimet e mia</h1>
-      <p>Shiko statusin e riparimit pa telefonuar në servis.</p>
+      <p className="lead">Shiko statusin e riparimit pa telefonuar në servis.</p>
       {riparimet.length === 0 ? (
-        <p>Nuk ke riparime në servis për momentin.</p>
+        <p className="empty">Nuk ke riparime në servis për momentin.</p>
       ) : (
         <div className="repair-list">
           {riparimet.map((riparim) => (

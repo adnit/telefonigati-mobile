@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { gjejRiparimin } from "@/lib/riparimet";
+import { StatusHapat } from "@/components/Statusi";
 
 export const dynamic = "force-dynamic";
 
@@ -24,22 +25,37 @@ export default async function Detajet({
 
   return (
     <main>
-      <Link href="/">← Kthehu te lista</Link>
+      <Link className="back" href="/">← Kthehu te lista</Link>
       <h1>{riparim.pajisja}</h1>
-      <p>Problemi: {riparim.problemi}</p>
-      <p>Dorëzuar në servis: {riparim.dorezuar}</p>
-      <p>Statusi: {riparim.statusi}</p>
-      <p>Çmimi i vlerësuar: {riparim.cmimi} €</p>
+      <p className="lead">{riparim.problemi}</p>
+
+      <section className="panel">
+        <StatusHapat statusi={riparim.statusi} />
+      </section>
+
+      <section className="panel">
+        <dl className="facts">
+          <div><dt>Dorëzuar në servis</dt><dd>{riparim.dorezuar}</dd></div>
+          <div><dt>Statusi</dt><dd>{riparim.statusi}</dd></div>
+          <div><dt>Çmimi i vlerësuar</dt><dd className="price">{riparim.cmimi} €</dd></div>
+        </dl>
+      </section>
+
       {riparim.shtese ? (
-        <>
-          <p>
-            Kosto shtesë: {riparim.shtese.arsyeja} (+{riparim.shtese.cmimi} €)
-          </p>
-          <Link className="action" href={`/riparimi/${id}/miratimi`}>
+        <section className="panel panel--notice">
+          <h2>Kosto shtesë</h2>
+          <p>{riparim.shtese.arsyeja}</p>
+          <dl className="facts">
+            <div><dt>Shtesë</dt><dd className="price">+{riparim.shtese.cmimi} €</dd></div>
+            <div><dt>Gjithsej pas miratimit</dt><dd className="price">{riparim.cmimi + riparim.shtese.cmimi} €</dd></div>
+          </dl>
+          <Link className="action action--block" href={`/riparimi/${id}/miratimi`}>
             Mirato koston shtesë
           </Link>
-        </>
-      ) : <button className="action" disabled>Nuk ka kosto shtesë</button>}
+        </section>
+      ) : (
+        <button className="action action--block" disabled>Nuk ka kosto shtesë</button>
+      )}
     </main>
   );
 }
