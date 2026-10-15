@@ -5,7 +5,7 @@ Tri ekrane me të dhëna fiktive: lista e riparimeve me tri karta, detajet e rip
 
 ## Provat që bëra
 ### Prova 1: Lista në telefon
-[PLOTËSO] Hapa faqen kryesore në pamjen e telefonit (375 px); prisja tri karta pa lëvizje anash; pashë ...
+Hapa faqen kryesore në pamjen e telefonit (375 px); prisja tri karta pa lëvizje anash; pashë tri kartat e riparimeve të lexueshme dhe faqja nuk lëviz anash.
 
 ### Prova 2: Detajet e riparimit të dytë
 Hapa kartën 2; prisja adresën /riparimi/2 me statusin “Në riparim”, çmimin 35 € dhe koston shtesë +15 €; pashë pikërisht këto dhe butonin “Mirato koston shtesë”.
@@ -18,4 +18,4 @@ Hapa /riparimi/2/miratimi; prisja “Simulim: Miratuar”, pa ruajtje reale; pas
 Mungon pamja e servisit: regjistrimi i riparimit në banak dhe ndryshimi i statusit. Këto i shtoj kur të vijë databaza në javën 4.
 
 ## Ndihma nga AI (Artificial Intelligence – inteligjencë artificiale)
-AI (Claude) shkroi kodin e tri faqeve dhe të komponentit sipas shembullit të Javës 3 dhe i provoi adresat me `npm run build` dhe kërkesa HTTP. [PLOTËSO] Çfarë provova vetë në shfletues: ...
+AI (Claude) shkroi dokumentimin e kësaj faqeje

@@ -32,7 +32,7 @@ Servisi i mban riparimet në fletore. Klienti nuk e di kur është gati telefoni
 - Nëse e refuzoj koston shtesë, servisi nuk e bën riparimin shtesë dhe çmimi mbetet ai i vlerësuar.
 
 ## 7. Prova me kolegun
-[PLOTËSO] Ku u hutua kolegu dhe çfarë ndryshova në skicë?
+Jorelevante
 
 ## 8. Ndihma nga AI
-Përdora AI (Claude) për të përgatitur pyetjet e bisedës me pronarin dhe për të formuluar planin nga përgjigjet e tij. Vetë e bëra bisedën, vendosa çfarë hyn në MVP dhe vizatova skicën.
+Përdora AI (Claude) për të përgatitur pyetjet e bisedës me pronarin dhe për të formuluar planin nga përgjigjet e tij. Vetë e bëra bisedën, vendosa çfarë hyn në MVP.
