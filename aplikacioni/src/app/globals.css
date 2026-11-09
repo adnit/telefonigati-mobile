@@ -244,3 +244,8 @@ main { max-width: 640px; margin: 0 auto; padding: 16px 16px 40px; }
 /* IMEI, numrat serial dhe emrat e gjatë nuk kanë hapësira ku të thyhen;
    anywhere i thyen vetëm kur nuk ka rrugë tjetër, që faqja të mos lëvizë anash. */
 main h1, main h2, .lead, .muted, .panel p, .facts dd { overflow-wrap: anywhere; }
+
+/* Në listë mjaftojnë dy rreshta të problemit; i plotë shfaqet te faqja e riparimit. */
+.repair-card > .muted {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+}
