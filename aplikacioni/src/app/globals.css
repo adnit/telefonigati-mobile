@@ -180,3 +180,41 @@ main { max-width: 640px; margin: 0 auto; padding: 16px 16px 40px; }
   padding: 12px 14px; border-radius: 12px;
   background: var(--notice-bg); color: var(--notice-text); border: 1px solid var(--notice-border);
 }
+
+/* Java 5: formularët, butonat e statusit dhe vendimi i klientit */
+.form { display: grid; gap: 8px; }
+.form label { font-weight: 500; margin-top: 6px; }
+.form input, .form textarea {
+  width: 100%; min-height: 48px; padding: 10px 12px;
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 12px;
+  font: inherit; font-size: 16px; /* nën 16px iOS e zmadhon faqen */
+}
+.form textarea { resize: vertical; }
+.form input:focus-visible, .form textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.action--quiet { background: var(--disabled-bg); color: var(--text); }
+
+.segmented {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 16px;
+}
+.segmented button {
+  min-height: 44px; padding: 6px 4px; border-radius: 10px;
+  border: 1px solid var(--border); background: transparent; color: var(--text);
+  font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  transition: transform 120ms ease-out;
+}
+.segmented button:not(:disabled):active { transform: scale(0.97); }
+.segmented button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+.choice { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.choice .action { margin-top: 12px; }
+
+.title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.title-row .action { margin-top: 0; }
+.eyebrow { margin: 16px 0 0; color: var(--muted); font-size: 0.85rem; }
+.flash { padding: 10px 12px; border-radius: 12px; background: var(--gati-bg); color: var(--gati-text); }
+.updated { margin: 16px 0 0; font-size: 0.85rem; text-align: center; }
+.share__url { margin-top: 8px; font-size: 0.8rem; overflow-wrap: anywhere; user-select: all; }
+.footer-link { margin-top: 24px; text-align: center; }
+.footer-link a { color: var(--muted); }

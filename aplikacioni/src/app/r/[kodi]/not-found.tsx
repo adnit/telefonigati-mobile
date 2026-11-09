@@ -5,8 +5,8 @@ export default function RiparimiNukUGjet() {
     <main>
       <section className="panel panel--center">
         <h1>Riparimi nuk u gjet</h1>
-        <p className="muted">Kjo adresë nuk përputhet me një riparim në listë.</p>
-        <Link className="action" href="/">Kthehu te lista</Link>
+        <p className="muted">Ky link nuk përputhet me asnjë riparim. Kërkoja servisit linkun e saktë.</p>
+        <Link className="action" href="/">Faqja kryesore</Link>
       </section>
     </main>
   );

@@ -1,0 +1,79 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { StatusHapat } from "@/components/Statusi";
+import { gjejMeKod } from "@/lib/riparimet";
+import { vendosKostoShtese } from "./actions";
+
+export const dynamic = "force-dynamic";
+
+const mesazhet: Record<string, string> = {
+  miratuar: "Faleminderit. Servisi e sheh miratimin dhe vazhdon punën.",
+  refuzuar: "U ruajt. Servisi nuk e bën riparimin shtesë; çmimi mbetet ai i vlerësuar.",
+  vendosur: "Për këtë kosto është vendosur tashmë.",
+};
+
+export default async function RiparimiIm({ params, searchParams }: {
+  params: Promise<{ kodi: string }>;
+  searchParams: Promise<{ m?: string }>;
+}) {
+  const { kodi } = await params;
+  const { m } = await searchParams;
+  let r;
+  try {
+    r = await gjejMeKod(kodi);
+  } catch {
+    return (
+      <main>
+        <h1>TelefoniGati</h1>
+        <p role="alert">Nuk u lidhëm me servisin. Provo përsëri pak më vonë.</p>
+        <Link className="action" href={`/r/${kodi}`}>Provo përsëri</Link>
+      </main>
+    );
+  }
+  if (!r) notFound();
+  const totali = r.cmimi + (r.shtese?.vendimi === "miratuar" ? r.shtese.cmimi : 0);
+
+  return (
+    <main>
+      <p className="eyebrow">TelefoniGati · Riparimi nr. {r.id}</p>
+      <h1>{r.pajisja}</h1>
+      <p className="lead">{r.problemi}</p>
+      {m && mesazhet[m] && <p role="status" className="flash">{mesazhet[m]}</p>}
+
+      <section className="panel">
+        <StatusHapat statusi={r.statusi} />
+        <p className="muted updated">Përditësuar: {r.perditesuar}</p>
+      </section>
+
+      {r.shtese?.vendimi === "pritje" && (
+        <section className="panel panel--notice">
+          <h2>Servisi gjeti një problem tjetër</h2>
+          <p>{r.shtese.arsyeja}</p>
+          <dl className="facts">
+            <div><dt>Shtesë</dt><dd className="price">+{r.shtese.cmimi} €</dd></div>
+            <div><dt>Gjithsej nëse e miraton</dt><dd className="price">{r.cmimi + r.shtese.cmimi} €</dd></div>
+          </dl>
+          <form action={vendosKostoShtese} className="choice">
+            <input type="hidden" name="kodi" value={r.kodi} />
+            <button className="action" name="vendimi" value="miratuar">Mirato</button>
+            <button className="action action--quiet" name="vendimi" value="refuzuar">Refuzo</button>
+          </form>
+        </section>
+      )}
+
+      <section className="panel">
+        <dl className="facts">
+          <div><dt>Dorëzuar</dt><dd>{r.dorezuar}</dd></div>
+          <div><dt>Çmimi i vlerësuar</dt><dd className="price">{r.cmimi} €</dd></div>
+          {r.shtese && r.shtese.vendimi !== "pritje" && (
+            <div>
+              <dt>Kosto shtesë</dt>
+              <dd>{r.shtese.vendimi === "miratuar" ? `+${r.shtese.cmimi} € · e miratuar` : "e refuzuar"}</dd>
+            </div>
+          )}
+          <div><dt>Për të paguar në servis</dt><dd className="price">{totali} €</dd></div>
+        </dl>
+      </section>
+    </main>
+  );
+}
