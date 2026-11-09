@@ -20,6 +20,19 @@
 
 * { box-sizing: border-box; }
 
+/* Pa blicin gri/blu të shfletuesit kur preket diçka; reagimin e japin :active më poshtë. */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Kontrollet reagojnë menjëherë dhe shtypja e gjatë nuk zgjedh tekstin e tyre. */
+a, button, .repair-card {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 body {
   margin: 0;
   background: var(--bg);
@@ -56,8 +69,11 @@ main { max-width: 640px; margin: 0 auto; padding: 16px 16px 40px; }
   box-shadow: var(--shadow);
   transition: border-color 120ms ease, transform 120ms ease;
 }
-.repair-card:hover { border-color: var(--accent); }
-.repair-card:active { transform: scale(0.99); }
+.repair-card:active { transform: scale(0.98); }
+/* Në telefon :hover mbetet "i ngecur" pas prekjes; e lejojmë vetëm me maus. */
+@media (hover: hover) and (pointer: fine) {
+  .repair-card:hover { border-color: var(--accent); }
+}
 .repair-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 .repair-card__top {
@@ -154,6 +170,8 @@ main { max-width: 640px; margin: 0 auto; padding: 16px 16px 40px; }
   background: var(--accent); color: var(--accent-text);
   font: inherit; font-weight: 600; text-decoration: none; cursor: pointer;
 }
+.action { transition: transform 120ms ease-out, opacity 120ms ease-out; }
+.action:not(:disabled):active { transform: scale(0.97); opacity: 0.9; }
 .action:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .action--block { display: flex; width: 100%; }
 .action:disabled { background: var(--disabled-bg); color: var(--disabled-text); cursor: default; }
