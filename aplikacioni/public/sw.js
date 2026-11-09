@@ -1,6 +1,6 @@
 // TelefoniGati: ruan vetëm faqen e riparimit të klientit (/r/…), skedarët statikë dhe faqen offline.
 // Paneli i servisit, hyrja dhe veprimet nuk ruhen kurrë.
-const CACHE = "telefonigati-v1";
+const CACHE = "telefonigati-v2";
 const SHELL = ["/offline.html", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -53,4 +53,29 @@ self.addEventListener("fetch", (event) => {
   } else if (request.mode === "navigate" && url.pathname === "/") {
     event.respondWith(fetch(request).catch(() => caches.match("/offline.html")));
   }
+});
+
+// Njoftimet: servisi ndryshoi statusin ose kërkon miratim.
+self.addEventListener("push", (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch { /* tekst i thjeshtë */ }
+  const url = typeof data.url === "string" && data.url.startsWith("/r/") ? data.url : "/";
+  event.waitUntil(self.registration.showNotification(data.title || "TelefoniGati", {
+    body: data.body || "Ka një ndryshim në riparimin tënd.",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+    tag: url, // një njoftim për riparim: i riu zëvendëson të vjetrin
+    renotify: true,
+    data: { url },
+  }));
+});
+
+// Prekja e njoftimit hap (ose sjell përpara) faqen e riparimit.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || "/", self.location.origin).href;
+  event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) => {
+    const w = wins.find((c) => c.url.split("?")[0] === url);
+    return w ? w.focus() : self.clients.openWindow(url);
+  }));
 });

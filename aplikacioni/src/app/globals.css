@@ -341,3 +341,13 @@ main h1, main h2, .lead, .muted, .panel p, .facts dd { overflow-wrap: anywhere; 
 .closed-list { margin-top: 32px; }
 .repair-list--closed { margin-top: 10px; }
 .repair-list--closed .repair-card { opacity: 0.72; }
+
+/* Njoftimet */
+.notify__row { display: flex; gap: 14px; align-items: flex-start; }
+.notify__row h2 + .muted { margin-top: 4px; font-size: 0.9rem; }
+.notify__icon {
+  display: grid; place-items: center; flex-shrink: 0; width: 36px; height: 36px; border-radius: 11px;
+  background: var(--surface-2); color: var(--muted); box-shadow: 0 0 0 1px var(--line) inset;
+}
+.notify__icon--on { background: var(--gati-soft); color: var(--gati); box-shadow: none; }
+.notify .action { margin-top: 14px; }

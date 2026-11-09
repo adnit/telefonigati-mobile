@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PaInternet, VetemMeRrjet } from "@/components/Rrjeti";
 import { Live } from "@/components/Live";
 import { Marka } from "@/components/Marka";
+import { Njoftimet } from "@/components/Njoftimet";
 import { StatusHapat, StatusKryesor } from "@/components/Statusi";
 import { gjejMeKod, totali as llogaritTotalin, versioniIRiparimit } from "@/lib/riparimet";
 import { vendosKostoShtese } from "./actions";
@@ -61,6 +62,10 @@ export default async function RiparimiIm({ params, searchParams }: {
         )}
         <StatusHapat statusi={r.statusi} />
       </section>
+
+      {r.statusi !== "Marrë" && process.env.VAPID_PUBLIC_KEY && (
+        <Njoftimet kodi={r.kodi} celesi={process.env.VAPID_PUBLIC_KEY} />
+      )}
 
       {r.shtese?.vendimi === "pritje" && (
         <section className="panel panel--notice">

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getSql } from "@/lib/db";
 import { STATUSET, type Statusi } from "@/lib/riparimet";
+import { dergoNjoftim } from "@/lib/njoftimet";
 import { vetemServisi } from "@/lib/servisi";
 
 function tekst(formData: FormData, emri: string, max: number) {
@@ -45,8 +46,16 @@ export async function ndryshoStatusin(formData: FormData) {
 
   const sql = getSql();
   // Një riparim i mbyllur nuk rihapet nga butonat e statusit.
-  await sql`UPDATE riparimet SET statusi = ${statusi}, perditesuar = now()
-    WHERE id = ${id} AND statusi <> 'Marrë'`;
+  // Njoftojmë vetëm kur statusi ndryshon vërtet, jo kur shtypet i njëjti buton.
+  const rows = await sql`UPDATE riparimet SET statusi = ${statusi}, perditesuar = now()
+    WHERE id = ${id} AND statusi <> 'Marrë' AND statusi <> ${statusi}
+    RETURNING kodi, pajisja`;
+  const r = rows[0];
+  if (r && statusi === "Gati për marrje") {
+    await dergoNjoftim(r.kodi, { titulli: "Telefoni yt është gati", teksti: `${r.pajisja} · Kalo në servis për ta marrë.` });
+  } else if (r && statusi === "Në riparim") {
+    await dergoNjoftim(r.kodi, { titulli: "Riparimi filloi", teksti: `${r.pajisja} është tani në riparim.` });
+  }
   revalidatePath("/servisi");
   redirect(`/servisi/riparimi/${id}?m=statusi`);
 }
@@ -63,7 +72,13 @@ export async function shtoKostoShtese(formData: FormData) {
   const rows = await sql`UPDATE riparimet
     SET shtese_arsyeja = ${arsyeja}, shtese_cmimi = ${cmimi}, vendimi = 'pritje', perditesuar = now()
     WHERE id = ${id} AND shtese_arsyeja IS NULL AND statusi <> 'Marrë'
-    RETURNING id`;
+    RETURNING id, kodi, pajisja`;
+  if (rows[0]) {
+    await dergoNjoftim(rows[0].kodi, {
+      titulli: "Servisi kërkon miratimin tënd",
+      teksti: `${rows[0].pajisja}: ${arsyeja} · +${cmimi} €`,
+    });
+  }
   revalidatePath("/servisi");
   redirect(`/servisi/riparimi/${id}?m=${rows.length === 1 ? "shtese" : "ka-shtese"}`);
 }

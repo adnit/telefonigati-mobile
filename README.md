@@ -25,12 +25,17 @@ npm run dev
 DATABASE_URL="lidhja e Neon për databazën telefonigati"
 GOOGLE_CLIENT_ID="Client ID nga Google Cloud"
 GOOGLE_CLIENT_SECRET="Client secret nga Google Cloud"
+VAPID_PUBLIC_KEY="çelësi publik për njoftimet"
+VAPID_PRIVATE_KEY="çelësi privat për njoftimet"
+VAPID_SUBJECT="mailto:emaili.yt@gmail.com"
 NEXTAUTH_SECRET="vlerë e rastësishme"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-Databaza: ekzekuto me radhë `schema.sql`, `schema-java05.sql`, `schema-java05b.sql` dhe `schema-java08.sql` në Neon SQL Editor. Pas hyrjes së parë me Google, pronari e bën llogarinë staf:
+Databaza: ekzekuto me radhë `schema.sql`, `schema-java05.sql`, `schema-java05b.sql`, `schema-java08.sql`, `schema-mbyllja.sql` dhe `schema-njoftimet.sql` në Neon SQL Editor. Pas hyrjes së parë me Google, pronari e bën llogarinë staf:
 
 ```sql
 UPDATE profilet SET roli = 'servis' WHERE email = 'emaili.i.stafit@gmail.com';
 ```
+
+Çelësat VAPID krijohen një herë me `npx web-push generate-vapid-keys`. Në Vercel shtohen te Environment Variables bashkë me të tjerët.
