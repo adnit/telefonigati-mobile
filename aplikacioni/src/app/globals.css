@@ -60,7 +60,8 @@ main { max-width: 640px; margin: 0 auto; padding: 16px 16px 40px; }
 }
 
 /* Lista */
-.repair-list { display: grid; gap: 12px; }
+/* minmax(0, 1fr): një kartë me tekst të gjatë nuk e zgjeron listën përtej ekranit. */
+.repair-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 
 .repair-card {
   display: block; padding: 16px;
@@ -239,3 +240,7 @@ main { max-width: 640px; margin: 0 auto; padding: 16px 16px 40px; }
 }
 .photo-shown { margin: 12px 0 0; }
 .photo-shown figcaption { margin-top: 8px; font-size: 0.85rem; text-align: center; }
+
+/* IMEI, numrat serial dhe emrat e gjatë nuk kanë hapësira ku të thyhen;
+   anywhere i thyen vetëm kur nuk ka rrugë tjetër, që faqja të mos lëvizë anash. */
+main h1, main h2, .lead, .muted, .panel p, .facts dd { overflow-wrap: anywhere; }
