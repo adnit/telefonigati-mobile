@@ -94,3 +94,20 @@ export async function gjejMeKod(kodi: string): Promise<Riparim | undefined> {
 export function totali(r: Riparim) {
   return r.cmimi + (r.shtese?.vendimi === "miratuar" ? r.shtese.cmimi : 0);
 }
+
+// Versioni = koha e ndryshimit të fundit. Faqet e krahasojnë për t'u rifreskuar vetë.
+export async function versioniIRiparimit(kodi: string): Promise<string | null> {
+  if (!/^[0-9a-f]{32}$/.test(kodi)) return null;
+  const sql = getSql();
+  const rows = await sql`SELECT (extract(epoch FROM perditesuar) * 1000)::bigint::text AS v
+    FROM riparimet WHERE kodi = ${kodi}
+      AND (marre IS NULL OR marre > now() - interval '30 days')`;
+  return (rows[0]?.v as string | undefined) ?? null;
+}
+
+export async function versioniIListes(): Promise<string> {
+  const sql = getSql();
+  const rows = await sql`SELECT coalesce((extract(epoch FROM max(perditesuar)) * 1000)::bigint, 0)::text
+    || '-' || count(*)::text AS v FROM riparimet`;
+  return rows[0].v as string;
+}

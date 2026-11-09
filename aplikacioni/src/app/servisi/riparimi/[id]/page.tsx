@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { LinkuKlientit } from "@/components/LinkuKlientit";
+import { Live } from "@/components/Live";
 import { StatusHapat } from "@/components/Statusi";
-import { STATUSET, gjejRiparimin, totali } from "@/lib/riparimet";
+import { STATUSET, gjejRiparimin, totali, versioniIRiparimit } from "@/lib/riparimet";
 import { vetemServisi } from "@/lib/servisi";
 import { mbyllRiparimin, ndryshoStatusin, shtoKostoShtese } from "../../actions";
 
@@ -34,9 +35,11 @@ export default async function RiparimiServisit({ params, searchParams }: {
   const { m } = await searchParams;
   const r = await gjejRiparimin(id);
   if (!r) notFound();
+  const versioni = await versioniIRiparimit(r.kodi);
 
   return (
     <main>
+      {versioni && <Live url={`/api/r/${r.kodi}/versioni`} versioni={versioni} />}
       <Link className="back" href="/servisi">← Riparimet</Link>
       <header className="page-head">
         <p className="label">Nr. {r.id} · {r.dorezuar}</p>

@@ -2,7 +2,8 @@ import Link from "next/link";
 import Hyrja from "@/components/Hyrja";
 import { Marka } from "@/components/Marka";
 import { KartaRiparimi } from "@/components/KartaRiparimi";
-import { lexoRiparimet, type Riparim } from "@/lib/riparimet";
+import { Live } from "@/components/Live";
+import { lexoRiparimet, versioniIListes, type Riparim } from "@/lib/riparimet";
 import { profiliIm } from "@/lib/servisi";
 
 export const dynamic = "force-dynamic";
@@ -17,9 +18,10 @@ export default async function Servisi({ searchParams }: {
   const { m } = await searchParams;
   let p;
   let riparimet: Riparim[] = [];
+  let versioni = "";
   try {
     p = await profiliIm();
-    if (p?.roli === "servis") riparimet = await lexoRiparimet();
+    if (p?.roli === "servis") [riparimet, versioni] = await Promise.all([lexoRiparimet(), versioniIListes()]);
   } catch {
     return (
       <main>
@@ -64,6 +66,7 @@ export default async function Servisi({ searchParams }: {
 
   return (
     <main>
+      <Live url="/api/servisi/versioni" versioni={versioni} />
       <div className="title-row">
         <Marka href="/servisi" />
         <Hyrja brenda />

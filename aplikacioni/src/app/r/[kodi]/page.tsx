@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PaInternet, VetemMeRrjet } from "@/components/Rrjeti";
+import { Live } from "@/components/Live";
 import { Marka } from "@/components/Marka";
 import { StatusHapat, StatusKryesor } from "@/components/Statusi";
-import { gjejMeKod, totali as llogaritTotalin } from "@/lib/riparimet";
+import { gjejMeKod, totali as llogaritTotalin, versioniIRiparimit } from "@/lib/riparimet";
 import { vendosKostoShtese } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -21,8 +22,9 @@ export default async function RiparimiIm({ params, searchParams }: {
   const { kodi } = await params;
   const { m } = await searchParams;
   let r;
+  let versioni: string | null = null;
   try {
-    r = await gjejMeKod(kodi);
+    [r, versioni] = await Promise.all([gjejMeKod(kodi), versioniIRiparimit(kodi)]);
   } catch {
     return (
       <main>
@@ -37,6 +39,7 @@ export default async function RiparimiIm({ params, searchParams }: {
 
   return (
     <main>
+      {versioni && r.statusi !== "Marrë" && <Live url={`/api/r/${kodi}/versioni`} versioni={versioni} />}
       <Marka />
       <header className="page-head">
         <p className="label">Riparimi nr. {r.id}</p>
