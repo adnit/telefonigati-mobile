@@ -24,11 +24,14 @@ export async function regjistroRiparimin(formData: FormData) {
   const problemi = tekst(formData, "problemi", 200);
   const cmimi = euro(formData, "cmimi");
   if (!pajisja || !problemi || cmimi === null) redirect("/servisi/i-ri?m=fushe");
+  // Fotoja vjen e zvogëluar nga telefoni; pranohet vetëm JPEG brenda kufirit.
+  const fotoV = String(formData.get("foto") ?? "");
+  const foto = fotoV.startsWith("data:image/jpeg;base64,") && fotoV.length <= 400_000 ? fotoV : null;
 
   const sql = getSql();
-  const rows = await sql`INSERT INTO riparimet (id, kodi, pajisja, problemi, dorezuar, statusi, cmimi)
+  const rows = await sql`INSERT INTO riparimet (id, kodi, pajisja, problemi, dorezuar, statusi, cmimi, foto)
     VALUES (nextval('riparimet_nr')::text, replace(gen_random_uuid()::text, '-', ''),
-            ${pajisja}, ${problemi}, current_date, 'Pranuar', ${cmimi})
+            ${pajisja}, ${problemi}, current_date, 'Pranuar', ${cmimi}, ${foto})
     RETURNING id`;
   revalidatePath("/servisi");
   redirect(`/servisi/riparimi/${rows[0].id}?m=regjistruar`);

@@ -67,6 +67,13 @@ export default async function RiparimiIm({ params, searchParams }: {
         </section>
       )}
 
+      {r.foto && (
+        <figure className="panel photo-shown">
+          {/* eslint-disable-next-line @next/next/no-img-element -- fotoja ruhet si data URL në databazë */}
+          <img src={r.foto} alt={`${r.pajisja} në pranim`} />
+          <figcaption className="muted">Gjendja e telefonit kur u la në servis · {r.dorezuar}</figcaption>
+        </figure>
+      )}
       <section className="panel">
         <dl className="facts">
           <div><dt>Dorëzuar</dt><dd>{r.dorezuar}</dd></div>

@@ -17,12 +17,15 @@ export type Riparim = {
   // problem i gjetur gjatë punës dhe vendimi i klientit për të
   shtese: { arsyeja: string; cmimi: number; vendimi: Vendimi } | null;
   perditesuar: string;
+  // JPEG i zvogëluar nga pranimi; lexohet vetëm te faqja e një riparimi
+  foto: string | null;
 };
 
 type Rresht = Omit<Riparim, "shtese"> & {
   shtese_arsyeja: string | null;
   shtese_cmimi: number | null;
   vendimi: Vendimi | null;
+  foto?: string | null;
 };
 
 function neRiparim(r: Rresht): Riparim {
@@ -39,6 +42,7 @@ function neRiparim(r: Rresht): Riparim {
         ? { arsyeja: r.shtese_arsyeja, cmimi: r.shtese_cmimi, vendimi: r.vendimi }
         : null,
     perditesuar: r.perditesuar,
+    foto: r.foto ?? null,
   };
 }
 
@@ -59,7 +63,7 @@ export async function gjejRiparimin(id: string): Promise<Riparim | undefined> {
   const rows = await sql`SELECT id, kodi, pajisja, problemi, to_char(dorezuar, 'DD.MM.YYYY') AS dorezuar,
     statusi, cmimi, shtese_arsyeja, shtese_cmimi, vendimi,
     to_char(perditesuar AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY HH24:MI') AS perditesuar
-    FROM riparimet WHERE id = ${id}`;
+    , foto FROM riparimet WHERE id = ${id}`;
   const r = rows[0] as Rresht | undefined;
   return r ? neRiparim(r) : undefined;
 }
@@ -71,7 +75,7 @@ export async function gjejMeKod(kodi: string): Promise<Riparim | undefined> {
   const rows = await sql`SELECT id, kodi, pajisja, problemi, to_char(dorezuar, 'DD.MM.YYYY') AS dorezuar,
     statusi, cmimi, shtese_arsyeja, shtese_cmimi, vendimi,
     to_char(perditesuar AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY HH24:MI') AS perditesuar
-    FROM riparimet WHERE kodi = ${kodi}`;
+    , foto FROM riparimet WHERE kodi = ${kodi}`;
   const r = rows[0] as Rresht | undefined;
   return r ? neRiparim(r) : undefined;
 }

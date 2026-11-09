@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { regjistroRiparimin } from "../actions";
+import { FotoPranimi } from "@/components/FotoPranimi";
 import { vetemServisi } from "@/lib/servisi";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,7 @@ export default async function RiparimIRi({ searchParams }: {
         <textarea id="problemi" name="problemi" maxLength={200} rows={3} required placeholder="p.sh. Ekrani i thyer" />
         <label htmlFor="cmimi">Çmimi i vlerësuar (€)</label>
         <input id="cmimi" name="cmimi" inputMode="numeric" pattern="\d{1,4}" maxLength={4} required placeholder="35" />
+        <FotoPranimi />
         {m === "fushe" && <p role="alert">Plotëso pajisjen, problemin dhe një çmim në euro (0–9999).</p>}
         <button className="action action--block" type="submit">Regjistro dhe krijo linkun</button>
       </form>
