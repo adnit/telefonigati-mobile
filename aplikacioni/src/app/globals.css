@@ -218,3 +218,9 @@ main { max-width: 640px; margin: 0 auto; padding: 16px 16px 40px; }
 .share__url { margin-top: 8px; font-size: 0.8rem; overflow-wrap: anywhere; user-select: all; }
 .footer-link { margin-top: 24px; text-align: center; }
 .footer-link a { color: var(--muted); }
+
+/* Java 6: leximi pa internet */
+.offline-banner { padding: 10px 12px; border-radius: 12px;
+  background: var(--notice-bg); color: var(--notice-text); border: 1px solid var(--notice-border); }
+.plain { border: 0; margin: 0; padding: 0; min-width: 0; }
+.plain:disabled .action { background: var(--disabled-bg); color: var(--disabled-text); }

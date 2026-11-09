@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PaInternet, VetemMeRrjet } from "@/components/Rrjeti";
 import { StatusHapat } from "@/components/Statusi";
 import { gjejMeKod } from "@/lib/riparimet";
 import { vendosKostoShtese } from "./actions";
@@ -38,6 +39,7 @@ export default async function RiparimiIm({ params, searchParams }: {
       <p className="eyebrow">TelefoniGati · Riparimi nr. {r.id}</p>
       <h1>{r.pajisja}</h1>
       <p className="lead">{r.problemi}</p>
+      <PaInternet perditesuar={r.perditesuar} />
       {m && mesazhet[m] && <p role="status" className="flash">{mesazhet[m]}</p>}
 
       <section className="panel">
@@ -53,10 +55,14 @@ export default async function RiparimiIm({ params, searchParams }: {
             <div><dt>Shtesë</dt><dd className="price">+{r.shtese.cmimi} €</dd></div>
             <div><dt>Gjithsej nëse e miraton</dt><dd className="price">{r.cmimi + r.shtese.cmimi} €</dd></div>
           </dl>
-          <form action={vendosKostoShtese} className="choice">
+          <form action={vendosKostoShtese}>
             <input type="hidden" name="kodi" value={r.kodi} />
-            <button className="action" name="vendimi" value="miratuar">Mirato</button>
-            <button className="action action--quiet" name="vendimi" value="refuzuar">Refuzo</button>
+            <VetemMeRrjet>
+              <div className="choice">
+                <button className="action" name="vendimi" value="miratuar">Mirato</button>
+                <button className="action action--quiet" name="vendimi" value="refuzuar">Refuzo</button>
+              </div>
+            </VetemMeRrjet>
           </form>
         </section>
       )}
