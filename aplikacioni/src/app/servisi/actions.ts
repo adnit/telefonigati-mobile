@@ -44,7 +44,9 @@ export async function ndryshoStatusin(formData: FormData) {
   if (!STATUSET.includes(statusi)) redirect(`/servisi/riparimi/${id}?m=fushe`);
 
   const sql = getSql();
-  await sql`UPDATE riparimet SET statusi = ${statusi}, perditesuar = now() WHERE id = ${id}`;
+  // Një riparim i mbyllur nuk rihapet nga butonat e statusit.
+  await sql`UPDATE riparimet SET statusi = ${statusi}, perditesuar = now()
+    WHERE id = ${id} AND statusi <> 'Marrë'`;
   revalidatePath("/servisi");
   redirect(`/servisi/riparimi/${id}?m=statusi`);
 }
@@ -60,8 +62,20 @@ export async function shtoKostoShtese(formData: FormData) {
   const sql = getSql();
   const rows = await sql`UPDATE riparimet
     SET shtese_arsyeja = ${arsyeja}, shtese_cmimi = ${cmimi}, vendimi = 'pritje', perditesuar = now()
-    WHERE id = ${id} AND shtese_arsyeja IS NULL
+    WHERE id = ${id} AND shtese_arsyeja IS NULL AND statusi <> 'Marrë'
     RETURNING id`;
   revalidatePath("/servisi");
   redirect(`/servisi/riparimi/${id}?m=${rows.length === 1 ? "shtese" : "ka-shtese"}`);
+}
+
+// Klienti e mori telefonin: mbyllet vetëm kur është gati dhe kostoja shtesë nuk pret vendim.
+export async function mbyllRiparimin(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (!(await vetemServisi())) redirect(`/servisi/riparimi/${id}?m=ndaluar`);
+  const sql = getSql();
+  const rows = await sql`UPDATE riparimet SET statusi = 'Marrë', marre = now(), perditesuar = now()
+    WHERE id = ${id} AND statusi = 'Gati për marrje' AND (vendimi IS NULL OR vendimi <> 'pritje')
+    RETURNING id`;
+  revalidatePath("/servisi");
+  redirect(`/servisi/riparimi/${id}?m=${rows.length === 1 ? "mbyllur" : "nuk-mbyllet"}`);
 }

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { PaInternet, VetemMeRrjet } from "@/components/Rrjeti";
 import { Marka } from "@/components/Marka";
 import { StatusHapat, StatusKryesor } from "@/components/Statusi";
-import { gjejMeKod } from "@/lib/riparimet";
+import { gjejMeKod, totali as llogaritTotalin } from "@/lib/riparimet";
 import { vendosKostoShtese } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +33,7 @@ export default async function RiparimiIm({ params, searchParams }: {
     );
   }
   if (!r) notFound();
-  const totali = r.cmimi + (r.shtese?.vendimi === "miratuar" ? r.shtese.cmimi : 0);
+  const totali = llogaritTotalin(r);
 
   return (
     <main>
@@ -47,7 +47,15 @@ export default async function RiparimiIm({ params, searchParams }: {
       {m && mesazhet[m] && <p role="status" className="flash">{mesazhet[m]}</p>}
 
       <section className="panel">
-        <StatusKryesor statusi={r.statusi} perditesuar={r.perditesuar} />
+        {r.statusi === "Marrë" ? (
+          <div className="status-hero status-hero--marre">
+            <p className="label">Riparimi u mbyll</p>
+            <p className="status-hero__value"><span className="status-hero__dot" aria-hidden="true" />E more më {r.marre}</p>
+            <p className="status-hero__time">Faleminderit që zgjodhe servisin tonë.</p>
+          </div>
+        ) : (
+          <StatusKryesor statusi={r.statusi} perditesuar={r.perditesuar} />
+        )}
         <StatusHapat statusi={r.statusi} />
       </section>
 
@@ -88,7 +96,7 @@ export default async function RiparimiIm({ params, searchParams }: {
               <dd>{r.shtese.vendimi === "miratuar" ? `+${r.shtese.cmimi} € · e miratuar` : "e refuzuar"}</dd>
             </div>
           )}
-          <div><dt>Për të paguar në servis</dt><dd className="price">{totali} €</dd></div>
+          <div><dt>{r.statusi === "Marrë" ? "Paguar" : "Për të paguar në servis"}</dt><dd className="price">{totali} €</dd></div>
         </dl>
       </section>
     </main>

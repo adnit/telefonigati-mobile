@@ -328,3 +328,16 @@ main h1, main h2, .lead, .muted, .panel p, .facts dd { overflow-wrap: anywhere; 
 /* Hapësira pas titujve të paneleve */
 .panel > .muted + .form, .panel > .muted + form { margin-top: 16px; }
 .panel > h2 + .share { margin-top: 14px; }
+
+/* Mbyllja e riparimit */
+:root { --marre: #a3abb8; --marre-soft: rgb(163 171 184 / 0.12); }
+.pill--marre { background: var(--marre-soft); color: var(--marre); }
+.status-hero--marre .status-hero__value { color: var(--marre); }
+.steps--marre .step__bar { background: var(--marre); }
+.panel--closed h2 { margin-top: 4px; }
+.panel--closed .facts { margin-top: 14px; }
+.close-form .action { margin-top: 14px; }
+.close-note { margin-top: 12px; font-size: 0.88rem; }
+.closed-list { margin-top: 32px; }
+.repair-list--closed { margin-top: 10px; }
+.repair-list--closed .repair-card { opacity: 0.72; }

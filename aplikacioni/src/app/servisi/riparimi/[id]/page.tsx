@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { LinkuKlientit } from "@/components/LinkuKlientit";
 import { StatusHapat } from "@/components/Statusi";
-import { STATUSET, gjejRiparimin } from "@/lib/riparimet";
+import { STATUSET, gjejRiparimin, totali } from "@/lib/riparimet";
 import { vetemServisi } from "@/lib/servisi";
-import { ndryshoStatusin, shtoKostoShtese } from "../../actions";
+import { mbyllRiparimin, ndryshoStatusin, shtoKostoShtese } from "../../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +15,8 @@ const mesazhet: Record<string, string> = {
   "ka-shtese": "Ky riparim ka tashmë një kosto shtesë.",
   fushe: "Kontrollo fushat: arsyeja dhe një shumë në euro (1–9999).",
   ndaluar: "Vetëm stafi i servisit mund ta bëjë këtë veprim.",
+  mbyllur: "Riparimi u mbyll. Klienti e sheh në linkun e vet.",
+  "nuk-mbyllet": "Riparimi mbyllet vetëm kur është gati dhe klienti ka vendosur për koston shtesë.",
 };
 
 const vendimet = {
@@ -43,17 +45,39 @@ export default async function RiparimiServisit({ params, searchParams }: {
       </header>
       {m && mesazhet[m] && <p role="status" className="flash">{mesazhet[m]}</p>}
 
-      <section className="panel">
-        <h2 className="panel__title">Statusi</h2>
-        <StatusHapat statusi={r.statusi} />
-        <form action={ndryshoStatusin} className="segmented" aria-label="Ndrysho statusin">
-          <input type="hidden" name="id" value={r.id} />
-          {STATUSET.map((s) => (
-            <button key={s} name="statusi" value={s} disabled={s === r.statusi}
-              aria-pressed={s === r.statusi}>{s}</button>
-          ))}
-        </form>
-      </section>
+      {r.statusi === "Marrë" ? (
+        <section className="panel panel--closed">
+          <p className="label">Mbyllur</p>
+          <h2>Klienti e mori telefonin më {r.marre}</h2>
+          <dl className="facts">
+            <div><dt>Paguar</dt><dd className="price">{totali(r)} €</dd></div>
+          </dl>
+        </section>
+      ) : (
+        <section className="panel">
+          <h2 className="panel__title">Statusi</h2>
+          <StatusHapat statusi={r.statusi} />
+          <form action={ndryshoStatusin} className="segmented" aria-label="Ndrysho statusin">
+            <input type="hidden" name="id" value={r.id} />
+            {STATUSET.map((s) => (
+              <button key={s} name="statusi" value={s} disabled={s === r.statusi}
+                aria-pressed={s === r.statusi}>{s}</button>
+            ))}
+          </form>
+          {r.statusi === "Gati për marrje" && (
+            r.shtese?.vendimi === "pritje" ? (
+              <p className="muted close-note">Mbyllja pret vendimin e klientit për koston shtesë.</p>
+            ) : (
+              <form action={mbyllRiparimin} className="close-form">
+                <input type="hidden" name="id" value={r.id} />
+                <button className="action action--block" type="submit">
+                  Klienti e mori · {totali(r)} €
+                </button>
+              </form>
+            )
+          )}
+        </section>
+      )}
 
       {r.foto && (
         <figure className="panel photo-shown">
@@ -77,7 +101,7 @@ export default async function RiparimiServisit({ params, searchParams }: {
             <div><dt>Shtesë</dt><dd className="price">+{r.shtese.cmimi} €</dd></div>
           </dl>
         </section>
-      ) : (
+      ) : r.statusi === "Marrë" ? null : (
         <form action={shtoKostoShtese} className="panel form">
           <h2>Gjete problem tjetër?</h2>
           <p className="muted">Klienti e miraton ose e refuzon nga telefoni, pa telefonatë.</p>
@@ -92,6 +116,7 @@ export default async function RiparimiServisit({ params, searchParams }: {
 
       <section className="panel">
         <h2>Linku i klientit</h2>
+        {r.statusi === "Marrë" && <p className="muted">Linku mbyllet 30 ditë pas marrjes.</p>}
         <LinkuKlientit shtegu={`/r/${r.kodi}`} />
       </section>
     </main>

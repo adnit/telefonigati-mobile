@@ -59,6 +59,9 @@ export default async function Servisi({ searchParams }: {
     );
   }
 
+  const aktive = riparimet.filter((r) => r.statusi !== "Marrë");
+  const mbyllura = riparimet.filter((r) => r.statusi === "Marrë");
+
   return (
     <main>
       <div className="title-row">
@@ -67,16 +70,24 @@ export default async function Servisi({ searchParams }: {
       </div>
       <header className="page-head">
         <h1>Riparimet</h1>
-        <p className="muted">{riparimet.length === 1 ? "1 riparim" : `${riparimet.length} riparime`} në servis</p>
+        <p className="muted">{aktive.length === 1 ? "1 telefon" : `${aktive.length} telefona`} në servis</p>
       </header>
       {m && mesazhet[m] && <p role="alert">{mesazhet[m]}</p>}
       <Link className="action action--block" href="/servisi/i-ri">+ Regjistro riparim</Link>
-      {riparimet.length === 0 ? (
-        <p className="empty">Nuk ka riparime ende. Regjistro të parin kur klienti sjell telefonin.</p>
+      {aktive.length === 0 ? (
+        <p className="empty">Asnjë telefon në servis. Regjistro riparimin kur klienti sjell telefonin.</p>
       ) : (
         <div className="repair-list">
-          {riparimet.map((r) => <KartaRiparimi key={r.id} riparim={r} />)}
+          {aktive.map((r) => <KartaRiparimi key={r.id} riparim={r} />)}
         </div>
+      )}
+      {mbyllura.length > 0 && (
+        <section className="closed-list">
+          <h2 className="label">Të mbyllura së fundmi</h2>
+          <div className="repair-list repair-list--closed">
+            {mbyllura.slice(0, 10).map((r) => <KartaRiparimi key={r.id} riparim={r} />)}
+          </div>
+        </section>
       )}
     </main>
   );

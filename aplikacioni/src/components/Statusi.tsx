@@ -6,6 +6,7 @@ const TONI: Record<Statusi, string> = {
   Pranuar: "pranuar",
   "Në riparim": "riparim",
   "Gati për marrje": "gati",
+  Marrë: "marre",
 };
 
 export function StatusPill({ statusi }: { statusi: Statusi }) {
@@ -34,7 +35,8 @@ export function StatusKryesor({ statusi, perditesuar }: { statusi: Statusi; perd
 // Tri hapat si shirit progresi: hapat para statusit aktual janë të kryer;
 // "Gati për marrje" është i fundit, prandaj aty janë të tre të plotë.
 export function StatusHapat({ statusi }: { statusi: Statusi }) {
-  const aktual = HAPAT.indexOf(statusi);
+  // "Marrë" nuk është në shirit: riparimi ka kaluar të tre hapat.
+  const aktual = statusi === "Marrë" ? HAPAT.length - 1 : HAPAT.indexOf(statusi);
   const iKryer = (i: number) => i < aktual || aktual === HAPAT.length - 1;
   return (
     <ol className={`steps steps--${TONI[statusi]}`} aria-label={`Statusi: ${statusi}`}>

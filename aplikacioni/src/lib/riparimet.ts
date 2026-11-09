@@ -1,7 +1,8 @@
 import "server-only";
 import { getSql } from "./db";
 
-export type Statusi = "Pranuar" | "Në riparim" | "Gati për marrje";
+// "Marrë" mbyll riparimin; tre të parët janë hapat që servisi i ndryshon gjatë punës.
+export type Statusi = "Pranuar" | "Në riparim" | "Gati për marrje" | "Marrë";
 export const STATUSET: Statusi[] = ["Pranuar", "Në riparim", "Gati për marrje"];
 export type Vendimi = "pritje" | "miratuar" | "refuzuar";
 
@@ -19,6 +20,8 @@ export type Riparim = {
   perditesuar: string;
   // JPEG i zvogëluar nga pranimi; lexohet vetëm te faqja e një riparimi
   foto: string | null;
+  // kur klienti e mori telefonin; null derisa riparimi të mbyllet
+  marre: string | null;
 };
 
 type Rresht = Omit<Riparim, "shtese"> & {
@@ -26,6 +29,7 @@ type Rresht = Omit<Riparim, "shtese"> & {
   shtese_cmimi: number | null;
   vendimi: Vendimi | null;
   foto?: string | null;
+  marre: string | null;
 };
 
 function neRiparim(r: Rresht): Riparim {
@@ -43,6 +47,7 @@ function neRiparim(r: Rresht): Riparim {
         : null,
     perditesuar: r.perditesuar,
     foto: r.foto ?? null,
+    marre: r.marre,
   };
 }
 
@@ -52,7 +57,8 @@ export async function lexoRiparimet(): Promise<Riparim[]> {
   const sql = getSql();
   const rows = await sql`SELECT id, kodi, pajisja, problemi, to_char(dorezuar, 'DD.MM.YYYY') AS dorezuar,
     statusi, cmimi, shtese_arsyeja, shtese_cmimi, vendimi,
-    to_char(perditesuar AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY HH24:MI') AS perditesuar
+    to_char(perditesuar AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY HH24:MI') AS perditesuar,
+    to_char(marre AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY') AS marre
     FROM riparimet ORDER BY riparimet.dorezuar DESC, riparimet.perditesuar DESC`;
   return (rows as Rresht[]).map(neRiparim);
 }
@@ -62,20 +68,29 @@ export async function gjejRiparimin(id: string): Promise<Riparim | undefined> {
   const sql = getSql();
   const rows = await sql`SELECT id, kodi, pajisja, problemi, to_char(dorezuar, 'DD.MM.YYYY') AS dorezuar,
     statusi, cmimi, shtese_arsyeja, shtese_cmimi, vendimi,
-    to_char(perditesuar AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY HH24:MI') AS perditesuar
+    to_char(perditesuar AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY HH24:MI') AS perditesuar,
+    to_char(marre AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY') AS marre
     , foto FROM riparimet WHERE id = ${id}`;
   const r = rows[0] as Rresht | undefined;
   return r ? neRiparim(r) : undefined;
 }
 
 // Për klientin: vetëm riparimi që i përket kodit të linkut të tij.
+// 30 ditë pasi telefoni merret, linku nuk hapet më.
 export async function gjejMeKod(kodi: string): Promise<Riparim | undefined> {
   if (!/^[0-9a-f]{32}$/.test(kodi)) return undefined;
   const sql = getSql();
   const rows = await sql`SELECT id, kodi, pajisja, problemi, to_char(dorezuar, 'DD.MM.YYYY') AS dorezuar,
     statusi, cmimi, shtese_arsyeja, shtese_cmimi, vendimi,
-    to_char(perditesuar AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY HH24:MI') AS perditesuar
-    , foto FROM riparimet WHERE kodi = ${kodi}`;
+    to_char(perditesuar AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY HH24:MI') AS perditesuar,
+    to_char(marre AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY') AS marre
+    , foto FROM riparimet WHERE kodi = ${kodi}
+      AND (riparimet.marre IS NULL OR riparimet.marre > now() - interval '30 days')`;
   const r = rows[0] as Rresht | undefined;
   return r ? neRiparim(r) : undefined;
+}
+
+// Shuma që klienti paguan: çmimi i vlerësuar plus kostoja shtesë vetëm nëse e ka miratuar.
+export function totali(r: Riparim) {
+  return r.cmimi + (r.shtese?.vendimi === "miratuar" ? r.shtese.cmimi : 0);
 }
