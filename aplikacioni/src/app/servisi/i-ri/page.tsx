@@ -14,8 +14,10 @@ export default async function RiparimIRi({ searchParams }: {
   return (
     <main>
       <Link className="back" href="/servisi">← Riparimet</Link>
-      <h1>Riparim i ri</h1>
-      <p className="lead">Plotësoje në banak, kur klienti e lë telefonin.</p>
+      <header className="page-head">
+        <h1>Riparim i ri</h1>
+        <p className="muted">Plotësoje në banak, kur klienti e lë telefonin.</p>
+      </header>
       <form action={regjistroRiparimin} className="panel form">
         <label htmlFor="pajisja">Pajisja</label>
         <input id="pajisja" name="pajisja" maxLength={80} required placeholder="p.sh. Samsung Galaxy A54" />

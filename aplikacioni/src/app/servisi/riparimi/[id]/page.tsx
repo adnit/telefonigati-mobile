@@ -36,11 +36,15 @@ export default async function RiparimiServisit({ params, searchParams }: {
   return (
     <main>
       <Link className="back" href="/servisi">← Riparimet</Link>
-      <h1>{r.pajisja}</h1>
-      <p className="lead">{r.problemi}</p>
+      <header className="page-head">
+        <p className="label">Nr. {r.id} · {r.dorezuar}</p>
+        <h1>{r.pajisja}</h1>
+        <p className="muted">{r.problemi}</p>
+      </header>
       {m && mesazhet[m] && <p role="status" className="flash">{mesazhet[m]}</p>}
 
       <section className="panel">
+        <h2 className="panel__title">Statusi</h2>
         <StatusHapat statusi={r.statusi} />
         <form action={ndryshoStatusin} className="segmented" aria-label="Ndrysho statusin">
           <input type="hidden" name="id" value={r.id} />
@@ -60,8 +64,6 @@ export default async function RiparimiServisit({ params, searchParams }: {
       )}
       <section className="panel">
         <dl className="facts">
-          <div><dt>Nr.</dt><dd>{r.id}</dd></div>
-          <div><dt>Dorëzuar</dt><dd>{r.dorezuar}</dd></div>
           <div><dt>Çmimi i vlerësuar</dt><dd className="price">{r.cmimi} €</dd></div>
           <div><dt>Përditësuar</dt><dd>{r.perditesuar}</dd></div>
         </dl>

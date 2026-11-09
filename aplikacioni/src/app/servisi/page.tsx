@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Hyrja from "@/components/Hyrja";
+import { Marka } from "@/components/Marka";
 import { KartaRiparimi } from "@/components/KartaRiparimi";
 import { lexoRiparimet, type Riparim } from "@/lib/riparimet";
 import { profiliIm } from "@/lib/servisi";
@@ -32,10 +33,14 @@ export default async function Servisi({ searchParams }: {
   if (!p) {
     return (
       <main>
-        <Link className="back" href="/">← Faqja kryesore</Link>
-        <h1>Hyrja për servisin</h1>
-        <p className="lead">Riparimet dhe statusin i sheh vetëm stafi i servisit.</p>
+        <Marka />
+        <header className="hero">
+          <p className="label">Për stafin</p>
+          <h1 className="display">Hyrja për servisin</h1>
+          <p className="lead">Regjistro riparimet në banak, ndrysho statusin dhe dërgoja klientit koston shtesë.</p>
+        </header>
         <Hyrja brenda={false} />
+        <p className="footer-link"><Link href="/">← Je klient? Hape linkun e riparimit</Link></p>
       </main>
     );
   }
@@ -43,8 +48,11 @@ export default async function Servisi({ searchParams }: {
   if (p.roli !== "servis") {
     return (
       <main>
-        <h1>Servisi</h1>
-        <p className="lead">Përshëndetje, {p.emri}. Llogaria jote nuk është ende e stafit.</p>
+        <Marka />
+        <header className="hero">
+          <h1>Llogaria nuk është ende e stafit</h1>
+          <p className="lead">Përshëndetje, {p.emri}.</p>
+        </header>
         <p className="muted">Pronari i servisit duhet ta aktivizojë llogarinë{p.email ? <> për <code>{p.email}</code></> : null}.</p>
         <Hyrja brenda />
       </main>
@@ -54,9 +62,13 @@ export default async function Servisi({ searchParams }: {
   return (
     <main>
       <div className="title-row">
-        <h1>Riparimet</h1>
+        <Marka href="/servisi" />
         <Hyrja brenda />
       </div>
+      <header className="page-head">
+        <h1>Riparimet</h1>
+        <p className="muted">{riparimet.length === 1 ? "1 riparim" : `${riparimet.length} riparime`} në servis</p>
+      </header>
       {m && mesazhet[m] && <p role="alert">{mesazhet[m]}</p>}
       <Link className="action action--block" href="/servisi/i-ri">+ Regjistro riparim</Link>
       {riparimet.length === 0 ? (

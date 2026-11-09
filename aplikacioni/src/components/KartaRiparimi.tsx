@@ -10,11 +10,9 @@ export function KartaRiparimi({ riparim }: { riparim: Riparim }) {
         <StatusPill statusi={riparim.statusi} />
       </div>
       <p className="muted">{riparim.problemi}</p>
-      {riparim.shtese?.vendimi === "pritje" && (
-        <p className="notice">Kosto shtesë · pret klientin</p>
-      )}
       <div className="repair-card__meta">
         <span>Nr. {riparim.id} · {riparim.dorezuar}</span>
+        {riparim.shtese?.vendimi === "pritje" && <span className="tag">Pret klientin</span>}
         <span className="price">{riparim.cmimi} €</span>
       </div>
     </Link>

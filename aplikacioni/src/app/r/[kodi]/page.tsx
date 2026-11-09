@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PaInternet, VetemMeRrjet } from "@/components/Rrjeti";
-import { StatusHapat } from "@/components/Statusi";
+import { Marka } from "@/components/Marka";
+import { StatusHapat, StatusKryesor } from "@/components/Statusi";
 import { gjejMeKod } from "@/lib/riparimet";
 import { vendosKostoShtese } from "./actions";
 
@@ -36,15 +37,18 @@ export default async function RiparimiIm({ params, searchParams }: {
 
   return (
     <main>
-      <p className="eyebrow">TelefoniGati · Riparimi nr. {r.id}</p>
-      <h1>{r.pajisja}</h1>
-      <p className="lead">{r.problemi}</p>
+      <Marka />
+      <header className="page-head">
+        <p className="label">Riparimi nr. {r.id}</p>
+        <h1>{r.pajisja}</h1>
+        <p className="muted">{r.problemi}</p>
+      </header>
       <PaInternet perditesuar={r.perditesuar} />
       {m && mesazhet[m] && <p role="status" className="flash">{mesazhet[m]}</p>}
 
       <section className="panel">
+        <StatusKryesor statusi={r.statusi} perditesuar={r.perditesuar} />
         <StatusHapat statusi={r.statusi} />
-        <p className="muted updated">Përditësuar: {r.perditesuar}</p>
       </section>
 
       {r.shtese?.vendimi === "pritje" && (

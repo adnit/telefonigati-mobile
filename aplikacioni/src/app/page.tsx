@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Marka } from "@/components/Marka";
 import { redirect } from "next/navigation";
 
 const mesazhet: Record<string, string> = {
@@ -20,8 +21,11 @@ export default async function Home({ searchParams }: {
   const { m } = await searchParams;
   return (
     <main>
-      <h1>TelefoniGati</h1>
-      <p className="lead">Statusi i riparimit të telefonit, pa telefonuar në servis.</p>
+      <Marka />
+      <header className="hero">
+        <h1 className="display">Ku është telefoni yt tani?</h1>
+        <p className="lead">Shiko statusin e riparimit dhe mirato koston shtesë nga telefoni, pa e thirrur servisin.</p>
+      </header>
 
       <section className="panel">
         <h2>Ke lënë telefonin në servis?</h2>
