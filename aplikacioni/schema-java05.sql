@@ -1,7 +1,7 @@
 -- Java 5 · TelefoniGati: hyrja e servisit, linku privat i klientit dhe vendimi i ruajtur.
 -- Ekzekutohet në Neon SQL Editor, në databazën telefonigati. Nuk fshin riparimet.
 
--- Kush ka hyrë me GitHub. Çdo hyrje e re është "vizitor"; vetëm pronari e bën "servis" në SQL.
+-- Kush ka hyrë (fillimisht me GitHub; nga schema-java05b.sql me Google). Çdo hyrje e re është "vizitor"; vetëm pronari e bën "servis" në SQL.
 CREATE TABLE IF NOT EXISTS profilet (
   github_id TEXT PRIMARY KEY,
   emri TEXT NOT NULL,

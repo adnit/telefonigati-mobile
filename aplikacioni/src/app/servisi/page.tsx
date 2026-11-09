@@ -45,7 +45,7 @@ export default async function Servisi({ searchParams }: {
       <main>
         <h1>Servisi</h1>
         <p className="lead">Përshëndetje, {p.emri}. Llogaria jote nuk është ende e stafit.</p>
-        <p className="muted">Pronari i servisit duhet ta aktivizojë llogarinë. ID GitHub: <code>{p.id}</code></p>
+        <p className="muted">Pronari i servisit duhet ta aktivizojë llogarinë{p.email ? <> për <code>{p.email}</code></> : null}.</p>
         <Hyrja brenda />
       </main>
     );

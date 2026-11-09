@@ -23,14 +23,14 @@ npm run dev
 
 ```
 DATABASE_URL="lidhja e Neon për databazën telefonigati"
-GITHUB_ID="Client ID i OAuth App"
-GITHUB_SECRET="Client secret i OAuth App"
+GOOGLE_CLIENT_ID="Client ID nga Google Cloud"
+GOOGLE_CLIENT_SECRET="Client secret nga Google Cloud"
 NEXTAUTH_SECRET="vlerë e rastësishme"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-Databaza: ekzekuto me radhë `schema.sql`, `schema-java05.sql` dhe `schema-java08.sql` në Neon SQL Editor. Pas hyrjes së parë me GitHub, pronari e bën llogarinë staf:
+Databaza: ekzekuto me radhë `schema.sql`, `schema-java05.sql`, `schema-java05b.sql` dhe `schema-java08.sql` në Neon SQL Editor. Pas hyrjes së parë me Google, pronari e bën llogarinë staf:
 
 ```sql
-UPDATE profilet SET roli = 'servis' WHERE github_id = 'ID_NGA_PANELI';
+UPDATE profilet SET roli = 'servis' WHERE email = 'emaili.i.stafit@gmail.com';
 ```
