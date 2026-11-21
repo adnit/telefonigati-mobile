@@ -1,0 +1,26 @@
+# Çdo push dhe pull request kontrollon që aplikacioni ndërtohet pa gabime.
+# Nuk përdor sekrete dhe nuk lidhet me databazën: faqet lexojnë Neon vetëm kur hapen.
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: aplikacioni
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: aplikacioni/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run build
+      - run: npx tsc --noEmit
