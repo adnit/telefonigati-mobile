@@ -6,8 +6,14 @@ Projekti individual në lëndën Programimi për Pajisje Mobile, Kolegji AAB, 20
 
 - [prd.md](prd.md) — problemi, biseda me pronarin, rrjedha dhe kriteret e pranimit
 - [scope-contract.md](scope-contract.md) — tri veçoritë e MVP-së dhe çfarë mbetet jashtë
-- Raportet javore: [java-02.md](java-02.md), [java-03.md](java-03.md), [java-04.md](java-04.md), [java-05.md](java-05.md), [java-06.md](java-06.md), [java-07.md](java-07.md), [java-08.md](java-08.md)
+- Raportet javore: [java-02.md](java-02.md), [java-03.md](java-03.md), [java-04.md](java-04.md), [java-05.md](java-05.md), [java-06.md](java-06.md), [java-07.md](java-07.md), [java-08.md](java-08.md), [java-09.md](java-09.md), [java-10.md](java-10.md)
 - `aplikacioni/` — kodi Next.js
+
+## Çfarë bën
+
+- **Servisi** (hyrje me Google, rol “servis”): regjistron riparimin në banak me foto dhe numrin e klientit, ndryshon statusin, shton koston shtesë, ia dërgon klientit linkun në WhatsApp dhe e mbyll riparimin kur klienti e merr telefonin. Lista ka kërkim dhe filtra sipas statusit.
+- **Klienti** (pa llogari, me link privat): sheh statusin me kohën e secilit hap, fotot e pranimit dhe shumën; miraton ose refuzon koston shtesë; merr njoftim kur telefoni është gati; e sheh statusin e fundit edhe pa internet.
+- **Siguria**: rolet kontrollohen në server, linku i klientit është kod i rastësishëm 32-shifror dhe skadon 30 ditë pas marrjes, faqet nuk indeksohen dhe linku nuk dërgohet si Referer.
 
 ## Nisja
 
@@ -32,7 +38,7 @@ NEXTAUTH_SECRET="vlerë e rastësishme"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-Databaza: ekzekuto me radhë `schema.sql`, `schema-java05.sql`, `schema-java05b.sql`, `schema-java08.sql`, `schema-mbyllja.sql` dhe `schema-njoftimet.sql` në Neon SQL Editor. Pas hyrjes së parë me Google, pronari e bën llogarinë staf:
+Databaza: ekzekuto me radhë `schema.sql`, `schema-java05.sql`, `schema-java05b.sql`, `schema-java08.sql`, `schema-mbyllja.sql`, `schema-njoftimet.sql` dhe `schema-perfundimi.sql` në Neon SQL Editor. Pas hyrjes së parë me Google, pronari e bën llogarinë staf:
 
 ```sql
 UPDATE profilet SET roli = 'servis' WHERE email = 'emaili.i.stafit@gmail.com';
