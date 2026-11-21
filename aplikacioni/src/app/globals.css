@@ -272,13 +272,13 @@ main h1, main h2, .lead, .muted, .panel p, .facts dd { overflow-wrap: anywhere; 
 .form h2 + .muted { margin-bottom: 8px; }
 
 /* Mesazhet */
-.flash, [role="alert"], .offline-banner {
+.flash, main [role="alert"], .offline-banner {
   margin-top: 12px; padding: 12px 14px; border-radius: var(--radius);
   font-size: 0.9rem; font-weight: 500;
   animation: hyrje 220ms var(--ease-out);
 }
 .flash { background: var(--gati-soft); color: var(--gati); box-shadow: 0 0 0 1px rgb(95 217 154 / 0.2) inset; }
-[role="alert"] { background: rgb(255 138 122 / 0.1); color: var(--danger); box-shadow: 0 0 0 1px rgb(255 138 122 / 0.22) inset; }
+main [role="alert"] { background: rgb(255 138 122 / 0.1); color: var(--danger); box-shadow: 0 0 0 1px rgb(255 138 122 / 0.22) inset; }
 .offline-banner { background: var(--warn-bg); color: var(--warn-text); box-shadow: 0 0 0 1px var(--warn-line) inset; }
 @keyframes hyrje { from { opacity: 0; transform: translateY(-4px); } }
 
@@ -351,3 +351,59 @@ main h1, main h2, .lead, .muted, .panel p, .facts dd { overflow-wrap: anywhere; 
 }
 .notify__icon--on { background: var(--gati-soft); color: var(--gati); box-shadow: none; }
 .notify .action { margin-top: 14px; }
+
+/* Përfundimi: butonat në pritje, koha e hapave, kërkimi, WhatsApp, skeletet */
+.spinner {
+  width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
+  border: 2px solid currentColor; border-right-color: transparent;
+  animation: rrotullim 700ms linear infinite;
+}
+@keyframes rrotullim { to { transform: rotate(360deg); } }
+.segmented button[aria-busy="true"] { color: var(--text); }
+.segmented button .spinner { width: 12px; height: 12px; margin-right: 6px; vertical-align: -2px; display: inline-block; }
+
+.steps { align-items: start; }
+.step__time { color: var(--faint); font-size: 0.72rem; font-weight: 500; font-variant-numeric: tabular-nums; min-height: 1em; }
+
+.hint { margin-top: -2px; color: var(--faint); font-size: 0.8rem; }
+
+.search {
+  display: flex; align-items: center; gap: 10px; margin-top: 16px; padding: 0 14px;
+  min-height: 48px; border-radius: var(--radius);
+  background: var(--field); box-shadow: 0 0 0 1px var(--line-strong) inset; color: var(--faint);
+  transition: box-shadow 140ms ease;
+}
+.search:focus-within { box-shadow: 0 0 0 1px var(--accent) inset, 0 0 0 3px var(--accent-soft); }
+.search input {
+  flex: 1; min-width: 0; min-height: 46px; border: 0; outline: 0; background: transparent;
+  color: var(--text); font: inherit; font-size: 16px;
+}
+.search input::placeholder { color: var(--faint); }
+.search input::-webkit-search-cancel-button { filter: invert(0.6); }
+
+.chips { display: flex; gap: 6px; margin-top: 10px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+  min-height: 36px; padding: 0 12px; border: 0; border-radius: 999px;
+  background: var(--surface); color: var(--muted); box-shadow: 0 0 0 1px var(--line) inset;
+  font: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  transition: transform 120ms var(--ease-out), background 140ms ease, color 140ms ease;
+}
+.chip:active { transform: scale(0.96); }
+.chip[aria-pressed="true"] { background: var(--text); color: var(--bg); box-shadow: none; }
+.chip__count { font-variant-numeric: tabular-nums; opacity: 0.6; font-size: 0.75rem; }
+
+.action--whatsapp { background: #25d366; color: #052e16; box-shadow: 0 1px 0 rgb(255 255 255 / 0.25) inset, 0 6px 20px -6px rgb(37 211 102 / 0.5); margin-top: 14px; }
+@media (hover: hover) and (pointer: fine) { .action--whatsapp:hover { background: #3ee07a; } }
+.action--whatsapp + .share { margin-top: 10px; }
+
+.skeleton {
+  border-radius: var(--radius); background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+  background-size: 200% 100%; animation: shkelqim 1.2s ease-in-out infinite;
+}
+.skeleton--brand { width: 130px; height: 24px; margin: 10px 0 28px; }
+.skeleton--title { width: 60%; height: 30px; }
+.skeleton--line { width: 85%; height: 16px; margin-top: 12px; }
+.skeleton--card { height: 120px; margin-top: 16px; border-radius: var(--radius-lg); }
+@keyframes shkelqim { from { background-position: 200% 0; } to { background-position: -200% 0; } }

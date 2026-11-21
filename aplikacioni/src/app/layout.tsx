@@ -16,6 +16,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "TelefoniGati",
   description: "Statusi i riparimit të telefonit",
+  // Faqet e riparimeve janë private: motorët e kërkimit nuk duhet t'i ruajnë.
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
