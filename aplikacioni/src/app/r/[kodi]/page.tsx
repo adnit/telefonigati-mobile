@@ -5,7 +5,7 @@ import { Live } from "@/components/Live";
 import { Marka } from "@/components/Marka";
 import { Njoftimet } from "@/components/Njoftimet";
 import { StatusHapat, StatusKryesor } from "@/components/Statusi";
-import { gjejMeKod, lexoHistorikun, lexoServisin, totali as llogaritTotalin, versioniIRiparimit } from "@/lib/riparimet";
+import { gjejMeKod, lexoHistorikunMeKod, lexoServisin, totali as llogaritTotalin, versioniIRiparimit } from "@/lib/riparimet";
 import { pershkrimiIDates } from "@/lib/data";
 import { Toast } from "@/components/Toast";
 import { Dergo } from "@/components/Dergo";
@@ -27,8 +27,13 @@ export default async function RiparimiIm({ params, searchParams }: {
   const { m } = await searchParams;
   let r;
   let versioni: string | null = null;
+  let kohet: Partial<Record<string, string>> = {};
+  let servisi: Awaited<ReturnType<typeof lexoServisin>> | null = null;
   try {
-    [r, versioni] = await Promise.all([gjejMeKod(kodi), versioniIRiparimit(kodi)]);
+    // Të katër leximet njëherësh: një pritje e vetme te databaza, jo katër me radhë.
+    [r, versioni, kohet, servisi] = await Promise.all([
+      gjejMeKod(kodi), versioniIRiparimit(kodi), lexoHistorikunMeKod(kodi), lexoServisin().catch(() => null),
+    ]);
   } catch {
     return (
       <main>
@@ -39,10 +44,6 @@ export default async function RiparimiIm({ params, searchParams }: {
     );
   }
   if (!r) notFound();
-  const [kohet, servisi] = await Promise.all([
-    lexoHistorikun(r.id).catch(() => ({})),
-    lexoServisin().catch(() => null),
-  ]);
   const eta = r.gatiDeri && (r.statusi === "Pranuar" || r.statusi === "Në riparim") ? pershkrimiIDates(r.gatiDeri) : null;
   const toast = m ? mesazhet[m] : undefined;
   const telServisi = servisi?.telefoni ?? null;

@@ -1,28 +1,30 @@
 import "server-only";
+import { cache } from "react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth";
 import { getSql } from "./db";
 
 export type Profil = { id: string; emri: string; email: string | null; roli: "vizitor" | "servis" | "pronar" };
 
-// Kush është i kyçur. Hyrja e parë krijon profil "vizitor"; rolin "servis" e jep pronari në SQL.
-export async function profiliIm(): Promise<Profil | null> {
+// Kush është i kyçur, në një udhëtim të vetëm te databaza: krijon profilin në hyrjen e parë,
+// përdor ftesën e stafit nëse ka një për këtë email, dhe kthen rolin.
+// cache(): layout-i dhe faqja e pyesin të dy, por në një kërkesë lexohet vetëm një herë.
+export const profiliIm = cache(async (): Promise<Profil | null> => {
   const session = await getServerSession(authOptions);
   const id = session?.user?.id;
   if (!id || !/^\d+$/.test(id)) return null;
   const sql = getSql();
-  const email = session.user.email ?? null;
-  await sql`INSERT INTO profilet (llogaria_id, emri, email) VALUES (${id}, ${session.user.name ?? "Punonjës"}, ${email})
-    ON CONFLICT (llogaria_id) DO UPDATE SET email = EXCLUDED.email`;
-  // Një email i ftuar nga pronari bëhet staf në hyrjen e parë; ftesa përdoret një herë.
-  if (email) {
-    await sql`WITH ftesa AS (DELETE FROM ftesat WHERE email = ${email.toLowerCase()} RETURNING email)
-      UPDATE profilet SET roli = 'servis'
-      WHERE llogaria_id = ${id} AND roli = 'vizitor' AND EXISTS (SELECT 1 FROM ftesa)`;
-  }
-  const rows = await sql`SELECT llogaria_id AS id, emri, email, roli FROM profilet WHERE llogaria_id = ${id}`;
+  const email = session.user.email?.toLowerCase() ?? null;
+  const rows = await sql`WITH ftesa AS (DELETE FROM ftesat WHERE email = ${email} RETURNING 1)
+    INSERT INTO profilet AS p (llogaria_id, emri, email, roli)
+    VALUES (${id}, ${session.user.name ?? "Punonjës"}, ${session.user.email ?? null},
+      CASE WHEN EXISTS (SELECT 1 FROM ftesa) THEN 'servis' ELSE 'vizitor' END)
+    ON CONFLICT (llogaria_id) DO UPDATE SET
+      email = EXCLUDED.email,
+      roli = CASE WHEN p.roli = 'vizitor' AND EXISTS (SELECT 1 FROM ftesa) THEN 'servis' ELSE p.roli END
+    RETURNING llogaria_id AS id, emri, email, roli`;
   return (rows[0] as Profil) ?? null;
-}
+});
 
 // Stafi i servisit: punonjësit dhe pronari. Një vend i vetëm për këtë rregull.
 export function eshteStaf(p: Profil | null): boolean {

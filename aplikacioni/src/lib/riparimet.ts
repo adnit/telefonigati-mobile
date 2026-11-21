@@ -195,3 +195,23 @@ export async function lexoPermbledhjen(): Promise<Permbledhja> {
     ditet: (ditet as { dow: number; numri: number }[]).map((d) => ({ dita: DITET[d.dow - 1], numri: d.numri })),
   };
 }
+
+// Historiku sipas kodit të klientit, që faqja e klientit t'i lexojë të gjitha njëherësh.
+export async function lexoHistorikunMeKod(kodi: string): Promise<Partial<Record<Statusi, string>>> {
+  if (!/^[0-9a-f]{32}$/.test(kodi)) return {};
+  const sql = getSql();
+  const rows = await sql`SELECT DISTINCT ON (h.statusi) h.statusi,
+      to_char(h.koha AT TIME ZONE 'Europe/Belgrade', 'DD.MM · HH24:MI') AS koha
+    FROM historiku h JOIN riparimet r ON r.id = h.riparim_id
+    WHERE r.kodi = ${kodi}
+    ORDER BY h.statusi, h.koha DESC`;
+  return Object.fromEntries((rows as Hap[]).map((h) => [h.statusi, h.koha]));
+}
+
+// Versioni sipas numrit, që faqja e stafit të mos presë fillimisht riparimin.
+export async function versioniSipasNumrit(id: string): Promise<string | null> {
+  const sql = getSql();
+  const rows = await sql`SELECT (extract(epoch FROM perditesuar) * 1000)::bigint::text AS v
+    FROM riparimet WHERE id = ${id}`;
+  return (rows[0]?.v as string | undefined) ?? null;
+}

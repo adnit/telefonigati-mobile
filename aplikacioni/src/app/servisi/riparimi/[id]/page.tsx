@@ -9,7 +9,7 @@ import { StatusHapat, StatusPill } from "@/components/Statusi";
 import { Toast } from "@/components/Toast";
 import { pershkrimiIDates } from "@/lib/data";
 import {
-  STATUSET, gjejRiparimin, lexoHistorikun, lexoShenimet, totali, versioniIRiparimit,
+  STATUSET, gjejRiparimin, lexoHistorikun, lexoShenimet, totali, versioniSipasNumrit,
 } from "@/lib/riparimet";
 import { vetemServisi } from "@/lib/servisi";
 import {
@@ -44,11 +44,11 @@ export default async function RiparimiServisit({ params, searchParams }: {
   if (!(await vetemServisi())) redirect("/servisi");
   const { id } = await params;
   const { m, nga } = await searchParams;
-  const r = await gjejRiparimin(id);
-  if (!r) notFound();
-  const [versioni, kohet, shenimet] = await Promise.all([
-    versioniIRiparimit(r.kodi), lexoHistorikun(r.id), lexoShenimet(r.id),
+  // Të gjitha leximet sipas numrit, njëherësh.
+  const [r, versioni, kohet, shenimet] = await Promise.all([
+    gjejRiparimin(id), versioniSipasNumrit(id), lexoHistorikun(id), lexoShenimet(id),
   ]);
+  if (!r) notFound();
 
   // Linku i plotë për WhatsApp: adresa e faqes ku po punon stafi (localhost ose Vercel).
   const h = await headers();
