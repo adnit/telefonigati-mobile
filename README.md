@@ -11,9 +11,10 @@ Projekti individual në lëndën Programimi për Pajisje Mobile, Kolegji AAB, 20
 
 ## Çfarë bën
 
-- **Servisi** (hyrje me Google, rol “servis”): regjistron riparimin në banak me foto dhe numrin e klientit, ndryshon statusin, shton koston shtesë, ia dërgon klientit linkun në WhatsApp dhe e mbyll riparimin kur klienti e merr telefonin. Lista ka kërkim dhe filtra sipas statusit.
-- **Klienti** (pa llogari, me link privat): sheh statusin me kohën e secilit hap, fotot e pranimit dhe shumën; miraton ose refuzon koston shtesë; merr njoftim kur telefoni është gati; e sheh statusin e fundit edhe pa internet.
-- **Siguria**: rolet kontrollohen në server, linku i klientit është kod i rastësishëm 32-shifror dhe skadon 30 ditë pas marrjes, faqet nuk indeksohen dhe linku nuk dërgohet si Referer.
+- **Servisi** (hyrje me Google): regjistron riparimin në banak me foto, numrin e klientit dhe datën e pritur; i jep klientit fletën me QR ose linkun në WhatsApp; ndryshon statusin nga një fletë që ngjitet nga poshtë (me “Zhbëj”), shton koston shtesë dhe shënime të brendshme, dhe e mbyll riparimin kur klienti e merr telefonin. Lista ka kërkim dhe filtra; “Përmbledhja” tregon javën e fundit.
+- **Pronari** menaxhon stafin me ftesa me email dhe të dhënat e servisit (emri, telefoni, orari, adresa) te “Cilësimet”.
+- **Klienti** (pa llogari, me link privat ose QR): sheh statusin me kohën e secilit hap dhe datën e pritur, fotot e pranimit dhe shumën; miraton ose refuzon koston shtesë; merr njoftim kur telefoni është gati; telefonon servisin ose i shkruan në WhatsApp; e sheh statusin e fundit edhe pa internet.
+- **Siguria**: rolet kontrollohen në server, linku i klientit është kod i rastësishëm 32-shifror dhe skadon 30 ditë pas marrjes, numri i klientit dhe shënimet nuk i shfaqen kurrë klientit, faqet nuk indeksohen dhe linku nuk dërgohet si Referer.
 
 ## Nisja
 
@@ -38,10 +39,10 @@ NEXTAUTH_SECRET="vlerë e rastësishme"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-Databaza: ekzekuto me radhë `schema.sql`, `schema-java05.sql`, `schema-java05b.sql`, `schema-java08.sql`, `schema-mbyllja.sql`, `schema-njoftimet.sql` dhe `schema-perfundimi.sql` në Neon SQL Editor. Pas hyrjes së parë me Google, pronari e bën llogarinë staf:
+Databaza: ekzekuto me radhë `schema.sql`, `schema-java05.sql`, `schema-java05b.sql`, `schema-java08.sql`, `schema-mbyllja.sql`, `schema-njoftimet.sql`, `schema-perfundimi.sql` dhe `schema-v2.sql` në Neon SQL Editor. Pas hyrjes së parë me Google, bëje llogarinë tënde pronar; stafin tjetër e fton pastaj nga “Cilësimet”:
 
 ```sql
-UPDATE profilet SET roli = 'servis' WHERE email = 'emaili.i.stafit@gmail.com';
+UPDATE profilet SET roli = 'pronar' WHERE email = 'emaili.yt@gmail.com';
 ```
 
 Çelësat VAPID krijohen një herë me `npx web-push generate-vapid-keys`. Në Vercel shtohen te Environment Variables bashkë me të tjerët.
