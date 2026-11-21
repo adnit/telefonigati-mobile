@@ -24,10 +24,15 @@ export async function profiliIm(): Promise<Profil | null> {
   return (rows[0] as Profil) ?? null;
 }
 
+// Stafi i servisit: punonjësit dhe pronari. Një vend i vetëm për këtë rregull.
+export function eshteStaf(p: Profil | null): boolean {
+  return p?.roli === "servis" || p?.roli === "pronar";
+}
+
 // Çdo veprim i servisit e thërret këtë në server; fshehja e butonave nuk mjafton.
 export async function vetemServisi(): Promise<Profil | null> {
   const p = await profiliIm();
-  return p?.roli === "servis" || p?.roli === "pronar" ? p : null;
+  return eshteStaf(p) ? p : null;
 }
 
 // Vetëm pronari menaxhon stafin dhe të dhënat e servisit.

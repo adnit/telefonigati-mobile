@@ -6,7 +6,7 @@ import { Live } from "@/components/Live";
 import { Toast } from "@/components/Toast";
 import { ListaRiparimeve } from "@/components/ListaRiparimeve";
 import { lexoRiparimet, versioniIListes, type Riparim } from "@/lib/riparimet";
-import { profiliIm } from "@/lib/servisi";
+import { eshteStaf, profiliIm } from "@/lib/servisi";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,7 @@ export default async function Servisi({ searchParams }: {
   let versioni = "";
   try {
     p = await profiliIm();
-    if (p?.roli === "servis") [riparimet, versioni] = await Promise.all([lexoRiparimet(), versioniIListes()]);
+    if (eshteStaf(p)) [riparimet, versioni] = await Promise.all([lexoRiparimet(), versioniIListes()]);
   } catch {
     return (
       <main>
@@ -49,7 +49,7 @@ export default async function Servisi({ searchParams }: {
     );
   }
 
-  if (p.roli !== "servis") {
+  if (!eshteStaf(p)) {
     return (
       <main>
         <Marka />
