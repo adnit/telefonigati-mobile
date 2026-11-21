@@ -13,6 +13,9 @@ export default async function Permbledhja() {
   const max = Math.max(1, ...p.ditet.map((d) => d.numri));
   const gjithsej = Math.max(1, p.sipasStatusit.reduce((a, s) => a + s.numri, 0));
   const fmt = new Intl.NumberFormat("sq-AL");
+  const perqindja = p.pershtypje.gjithsej ? Math.round((p.pershtypje.po / p.pershtypje.gjithsej) * 100) : 0;
+  // Si pragu i ligjëratës 1: 4 nga 5 me të paktën 5 përgjigje.
+  const gjendjaHipotezes = p.pershtypje.gjithsej < 5 ? "pak" : perqindja >= 80 ? "po" : "jo";
 
   return (
     <main>
@@ -26,6 +29,27 @@ export default async function Permbledhja() {
         <div className="stat"><p className="stat__label">Në servis tani</p><p className="stat__value">{p.neServis}</p></div>
         <div className="stat"><p className="stat__label">Të ardhura të mbyllura</p><p className="stat__value">{fmt.format(p.hyrjaJava)} €</p></div>
         <div className="stat"><p className="stat__label">Ditë deri në “Gati”</p><p className="stat__value">{p.diteMesatare ?? "–"}</p></div>
+      </section>
+
+      <section className={`panel hypothesis hypothesis--${gjendjaHipotezes}`}>
+        <p className="label">Hipoteza e projektit</p>
+        <h2>Linku i kursen klientit telefonatën “a u bë gati?”</h2>
+        <div className="hypothesis__row">
+          <p className="hypothesis__value">{p.pershtypje.gjithsej ? `${perqindja}%` : "–"}</p>
+          <p className="muted">
+            {p.pershtypje.po} nga {p.pershtypje.gjithsej} klientë thanë “Po” pas marrjes.
+            Pragu: 80% (4 nga 5) me të paktën 5 përgjigje.
+          </p>
+        </div>
+        <div className="meter" aria-hidden="true">
+          <span className="meter__fill" style={{ width: `${perqindja}%` }} />
+          <span className="meter__goal" />
+        </div>
+        <p className="hypothesis__verdict">
+          {gjendjaHipotezes === "pak" ? `Ende pak përgjigje (${p.pershtypje.gjithsej}/5).`
+            : gjendjaHipotezes === "po" ? "Hipoteza mbështetet nga përgjigjet."
+            : "Hipoteza nuk mbështetet ende: duhet parë pse."}
+        </p>
       </section>
 
       <section className="panel">

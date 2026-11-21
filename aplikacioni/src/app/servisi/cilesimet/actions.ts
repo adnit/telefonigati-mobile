@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getSql } from "@/lib/db";
 import { vetemPronari } from "@/lib/servisi";
+import { normalizoTelefonin } from "@/lib/rregullat";
 
 function fusha(formData: FormData, emri: string, max: number) {
   const v = String(formData.get(emri) ?? "").trim();
@@ -14,9 +15,8 @@ function fusha(formData: FormData, emri: string, max: number) {
 export async function ruajServisin(formData: FormData) {
   if (!(await vetemPronari())) redirect("/servisi?m=ndaluar");
   const emri = fusha(formData, "emri", 60);
-  const telV = String(formData.get("telefoni") ?? "").replace(/[\s\-().]/g, "");
-  const tel = !telV ? null : telV.startsWith("00") ? "+" + telV.slice(2) : telV.startsWith("0") ? "+383" + telV.slice(1) : telV;
-  if (!emri || (tel && !/^\+?[0-9]{8,15}$/.test(tel))) redirect("/servisi/cilesimet?m=fushe");
+  const tel = normalizoTelefonin(String(formData.get("telefoni") ?? ""));
+  if (!emri || tel === "gabim") redirect("/servisi/cilesimet?m=fushe");
   const sql = getSql();
   await sql`UPDATE servisi SET emri = ${emri}, telefoni = ${tel},
     orari = ${fusha(formData, "orari", 80)}, adresa = ${fusha(formData, "adresa", 120)}`;

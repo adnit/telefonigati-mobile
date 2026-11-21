@@ -5,11 +5,12 @@ import { Live } from "@/components/Live";
 import { Marka } from "@/components/Marka";
 import { Njoftimet } from "@/components/Njoftimet";
 import { StatusHapat, StatusKryesor } from "@/components/Statusi";
-import { gjejMeKod, lexoHistorikunMeKod, lexoServisin, totali as llogaritTotalin, versioniIRiparimit } from "@/lib/riparimet";
+import { gjejMeKod, kaPershtypje, lexoHistorikunMeKod, lexoServisin, totali as llogaritTotalin, versioniIRiparimit } from "@/lib/riparimet";
 import { pershkrimiIDates } from "@/lib/data";
 import { Toast } from "@/components/Toast";
+import { eshteBllokuar, shenoKodTeGabuar } from "@/lib/kufiri";
 import { Dergo } from "@/components/Dergo";
-import { vendosKostoShtese } from "./actions";
+import { ruajPershtypjen, vendosKostoShtese } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ const mesazhet: Record<string, [string, "ok" | "gabim"]> = {
   miratuar: ["Faleminderit. Servisi e sheh miratimin dhe vazhdon punën.", "ok"],
   refuzuar: ["U ruajt. Riparimi shtesë nuk bëhet; çmimi mbetet ai i vlerësuar.", "ok"],
   vendosur: ["Për këtë kosto është vendosur tashmë.", "gabim"],
+  pershtypja: ["Faleminderit! Përgjigjja jote e ndihmon servisin.", "ok"],
 };
 
 export default async function RiparimiIm({ params, searchParams }: {
@@ -25,6 +27,16 @@ export default async function RiparimiIm({ params, searchParams }: {
 }) {
   const { kodi } = await params;
   const { m } = await searchParams;
+  if (await eshteBllokuar().catch(() => false)) {
+    return (
+      <main>
+        <section className="panel panel--center">
+          <h1>Shumë prova</h1>
+          <p className="muted">Ky telefon provoi shumë linqe të gabuara. Provo sërish pas 10 minutash ose kërkoja servisit linkun e saktë.</p>
+        </section>
+      </main>
+    );
+  }
   let r;
   let versioni: string | null = null;
   let kohet: Partial<Record<string, string>> = {};
@@ -43,11 +55,15 @@ export default async function RiparimiIm({ params, searchParams }: {
       </main>
     );
   }
-  if (!r) notFound();
+  if (!r) {
+    await shenoKodTeGabuar().catch(() => {});
+    notFound();
+  }
   const eta = r.gatiDeri && (r.statusi === "Pranuar" || r.statusi === "Në riparim") ? pershkrimiIDates(r.gatiDeri) : null;
   const toast = m ? mesazhet[m] : undefined;
   const telServisi = servisi?.telefoni ?? null;
   const totali = llogaritTotalin(r);
+  const pyetPershtypjen = r.statusi === "Marrë" && !(await kaPershtypje(kodi).catch(() => true));
 
   return (
     <main>
@@ -80,6 +96,18 @@ export default async function RiparimiIm({ params, searchParams }: {
         <StatusHapat statusi={r.statusi} kohet={kohet} />
       </section>
 
+      {pyetPershtypjen && (
+        <section className="panel feedback">
+          <h2>A të kurseu ky link një telefonatë në servis?</h2>
+          <p className="muted">Një prekje. Na ndihmon të kuptojmë nëse aplikacioni vlen.</p>
+          <form action={ruajPershtypjen} className="choice">
+            <input type="hidden" name="kodi" value={r.kodi} />
+            <Dergo className="action" name="kurseu" value="po" pritja="…">Po</Dergo>
+            <Dergo className="action action--quiet" name="kurseu" value="jo" pritja="…">Jo</Dergo>
+          </form>
+        </section>
+      )}
+
       {r.statusi !== "Marrë" && process.env.VAPID_PUBLIC_KEY && (
         <Njoftimet kodi={r.kodi} celesi={process.env.VAPID_PUBLIC_KEY} />
       )}
@@ -104,10 +132,10 @@ export default async function RiparimiIm({ params, searchParams }: {
         </section>
       )}
 
-      {r.foto && (
+      {r.kaFoto && (
         <figure className="panel photo-shown">
           {/* eslint-disable-next-line @next/next/no-img-element -- fotoja ruhet si data URL në databazë */}
-          <img src={r.foto} alt={`${r.pajisja} në pranim`} />
+          <img src={`/r/${r.kodi}/foto`} alt={`${r.pajisja} në pranim`} loading="lazy" decoding="async" width={1024} height={768} />
           <figcaption className="muted">Gjendja e telefonit kur u la në servis · {r.dorezuar}</figcaption>
         </figure>
       )}

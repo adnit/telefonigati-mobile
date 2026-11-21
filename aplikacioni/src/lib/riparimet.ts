@@ -19,7 +19,8 @@ export type Riparim = {
   shtese: { arsyeja: string; cmimi: number; vendimi: Vendimi } | null;
   perditesuar: string;
   // JPEG i zvogëluar nga pranimi; lexohet vetëm te faqja e një riparimi
-  foto: string | null;
+  // a ka foto pranimi; vetë fotoja shërbehet veç si imazh (…/foto), jo brenda faqes
+  kaFoto: boolean;
   // kur klienti e mori telefonin; null derisa riparimi të mbyllet
   marre: string | null;
   // data e pritur kur telefoni del gati (YYYY-MM-DD); null kur servisi nuk e ka caktuar
@@ -30,7 +31,7 @@ type Rresht = Omit<Riparim, "shtese"> & {
   shtese_arsyeja: string | null;
   shtese_cmimi: number | null;
   vendimi: Vendimi | null;
-  foto?: string | null;
+  ka_foto?: boolean;
   marre: string | null;
   gati_deri: string | null;
 };
@@ -49,7 +50,7 @@ function neRiparim(r: Rresht): Riparim {
         ? { arsyeja: r.shtese_arsyeja, cmimi: r.shtese_cmimi, vendimi: r.vendimi }
         : null,
     perditesuar: r.perditesuar,
-    foto: r.foto ?? null,
+    kaFoto: Boolean(r.ka_foto),
     marre: r.marre,
     gatiDeri: r.gati_deri,
   };
@@ -71,16 +72,16 @@ export async function lexoRiparimet(): Promise<Riparim[]> {
 // Vetëm për servisin: një riparim sipas numrit.
 // Vetëm për stafin: riparimi me numrin e telefonit të klientit (për WhatsApp).
 // Numri nuk lexohet kurrë nga faqja e klientit (gjejMeKod).
-export async function gjejRiparimin(id: string): Promise<(Riparim & { telefoni: string | null }) | undefined> {
+export async function gjejRiparimin(id: string): Promise<(Riparim & { telefoni: string | null; imei: string | null }) | undefined> {
   const sql = getSql();
   const rows = await sql`SELECT id, kodi, pajisja, problemi, to_char(dorezuar, 'DD.MM.YYYY') AS dorezuar,
     statusi, cmimi, shtese_arsyeja, shtese_cmimi, vendimi,
     to_char(perditesuar AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY HH24:MI') AS perditesuar,
     to_char(gati_deri, 'YYYY-MM-DD') AS gati_deri,
     to_char(marre AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY') AS marre
-    , foto, telefoni FROM riparimet WHERE id = ${id}`;
-  const r = rows[0] as (Rresht & { telefoni: string | null }) | undefined;
-  return r ? { ...neRiparim(r), telefoni: r.telefoni } : undefined;
+    , foto IS NOT NULL AS ka_foto, telefoni, imei FROM riparimet WHERE id = ${id}`;
+  const r = rows[0] as (Rresht & { telefoni: string | null; imei: string | null }) | undefined;
+  return r ? { ...neRiparim(r), telefoni: r.telefoni, imei: r.imei } : undefined;
 }
 
 // Për klientin: vetëm riparimi që i përket kodit të linkut të tij.
@@ -93,7 +94,7 @@ export async function gjejMeKod(kodi: string): Promise<Riparim | undefined> {
     to_char(perditesuar AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY HH24:MI') AS perditesuar,
     to_char(gati_deri, 'YYYY-MM-DD') AS gati_deri,
     to_char(marre AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY') AS marre
-    , foto FROM riparimet WHERE kodi = ${kodi}
+    , foto IS NOT NULL AS ka_foto FROM riparimet WHERE kodi = ${kodi}
       AND (riparimet.marre IS NULL OR riparimet.marre > now() - interval '30 days')`;
   const r = rows[0] as Rresht | undefined;
   return r ? neRiparim(r) : undefined;
@@ -161,6 +162,7 @@ export type Permbledhja = {
   shteseMiratuar: number;
   diteMesatare: number | null;
   ditet: { dita: string; numri: number }[];
+  pershtypje: { po: number; gjithsej: number };
 };
 
 const DITET = ["Hën", "Mar", "Mër", "Enj", "Pre", "Sht", "Die"];
@@ -168,7 +170,7 @@ const DITET = ["Hën", "Mar", "Mër", "Enj", "Pre", "Sht", "Die"];
 // Përmbledhja e pronarit: java e fundit, gjendja tani dhe shpejtësia e riparimeve.
 export async function lexoPermbledhjen(): Promise<Permbledhja> {
   const sql = getSql();
-  const [[a], statuset, ditet] = await Promise.all([
+  const [[a], statuset, ditet, [pp]] = await Promise.all([
     sql`SELECT
         count(*) FILTER (WHERE dorezuar > current_date - 7)::int AS java_riparime,
         count(*) FILTER (WHERE statusi <> 'Marrë')::int AS ne_servis,
@@ -187,12 +189,14 @@ export async function lexoPermbledhjen(): Promise<Permbledhja> {
       FROM generate_series(current_date - 6, current_date, interval '1 day') d
       LEFT JOIN riparimet r ON r.dorezuar = d::date
       GROUP BY d ORDER BY d`,
+    sql`SELECT count(*) FILTER (WHERE kurseu_telefonate)::int AS po, count(*)::int AS gjithsej FROM pershtypjet`,
   ]);
   return {
     javaRiparime: a.java_riparime, neServis: a.ne_servis, hyrjaJava: a.hyrja_java,
     shteseMiratuar: a.shtese_miratuar, diteMesatare: a.dite_mesatare,
     sipasStatusit: statuset as Permbledhja["sipasStatusit"],
     ditet: (ditet as { dow: number; numri: number }[]).map((d) => ({ dita: DITET[d.dow - 1], numri: d.numri })),
+    pershtypje: { po: pp.po, gjithsej: pp.gjithsej },
   };
 }
 
@@ -214,4 +218,32 @@ export async function versioniSipasNumrit(id: string): Promise<string | null> {
   const rows = await sql`SELECT (extract(epoch FROM perditesuar) * 1000)::bigint::text AS v
     FROM riparimet WHERE id = ${id}`;
   return (rows[0]?.v as string | undefined) ?? null;
+}
+
+export type Ngjarje = { kush: string; veprimi: string; koha: string };
+
+// Regjistri i veprimeve: kush ndryshoi çfarë, për stafin.
+export async function lexoNgjarjet(riparimId: string): Promise<Ngjarje[]> {
+  const sql = getSql();
+  const rows = await sql`SELECT kush, veprimi, to_char(koha AT TIME ZONE 'Europe/Belgrade', 'DD.MM · HH24:MI') AS koha
+    FROM ngjarjet WHERE riparim_id = ${riparimId} ORDER BY ngjarjet.koha DESC, id DESC LIMIT 30`;
+  return rows as Ngjarje[];
+}
+
+export async function kaPershtypje(kodi: string): Promise<boolean> {
+  const sql = getSql();
+  const rows = await sql`SELECT 1 FROM pershtypjet p JOIN riparimet r ON r.id = p.riparim_id WHERE r.kodi = ${kodi}`;
+  return rows.length > 0;
+}
+
+// Fotoja si bajte JPEG, për rrugët …/foto që shfletuesi i ruan në cache.
+export async function lexoFoton(kush: { id: string } | { kodi: string }): Promise<Buffer | null> {
+  const sql = getSql();
+  const rows = "id" in kush
+    ? await sql`SELECT foto FROM riparimet WHERE id = ${kush.id}`
+    : await sql`SELECT foto FROM riparimet WHERE kodi = ${kush.kodi}
+        AND (marre IS NULL OR marre > now() - interval '30 days')`;
+  const foto = rows[0]?.foto as string | null | undefined;
+  if (!foto?.startsWith("data:image/jpeg;base64,")) return null;
+  return Buffer.from(foto.slice("data:image/jpeg;base64,".length), "base64");
 }

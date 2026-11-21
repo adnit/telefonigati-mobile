@@ -9,7 +9,7 @@ import { StatusHapat, StatusPill } from "@/components/Statusi";
 import { Toast } from "@/components/Toast";
 import { pershkrimiIDates } from "@/lib/data";
 import {
-  STATUSET, gjejRiparimin, lexoHistorikun, lexoShenimet, totali, versioniSipasNumrit,
+  STATUSET, gjejRiparimin, lexoHistorikun, lexoNgjarjet, lexoShenimet, totali, versioniSipasNumrit,
 } from "@/lib/riparimet";
 import { vetemServisi } from "@/lib/servisi";
 import {
@@ -45,8 +45,8 @@ export default async function RiparimiServisit({ params, searchParams }: {
   const { id } = await params;
   const { m, nga } = await searchParams;
   // Të gjitha leximet sipas numrit, njëherësh.
-  const [r, versioni, kohet, shenimet] = await Promise.all([
-    gjejRiparimin(id), versioniSipasNumrit(id), lexoHistorikun(id), lexoShenimet(id),
+  const [r, versioni, kohet, shenimet, ngjarjet] = await Promise.all([
+    gjejRiparimin(id), versioniSipasNumrit(id), lexoHistorikun(id), lexoShenimet(id), lexoNgjarjet(id),
   ]);
   if (!r) notFound();
 
@@ -124,6 +124,7 @@ export default async function RiparimiServisit({ params, searchParams }: {
             <dt>Gati deri më</dt>
             <dd className={eta?.vonese ? "late" : undefined}>{eta ? `${eta.data} · ${eta.relativ}` : "pa datë"}</dd>
           </div>
+          {r.imei && <div><dt>IMEI</dt><dd className="mono">{r.imei}</dd></div>}
           {r.telefoni && <div><dt>Telefoni i klientit</dt><dd><a href={`tel:${r.telefoni}`}>{r.telefoni}</a></dd></div>}
         </dl>
         {!mbyllur && (
@@ -161,10 +162,10 @@ export default async function RiparimiServisit({ params, searchParams }: {
         </section>
       )}
 
-      {r.foto && (
+      {r.kaFoto && (
         <figure className="panel photo-shown">
           {/* eslint-disable-next-line @next/next/no-img-element -- fotoja ruhet si data URL në databazë */}
-          <img src={r.foto} alt={`${r.pajisja} në pranim`} />
+          <img src={`/servisi/riparimi/${r.id}/foto`} alt={`${r.pajisja} në pranim`} loading="lazy" decoding="async" width={1024} height={768} />
           <figcaption className="muted">Gjendja e telefonit kur u la në servis · {r.dorezuar}</figcaption>
         </figure>
       )}
@@ -202,6 +203,22 @@ export default async function RiparimiServisit({ params, searchParams }: {
           </ol>
         )}
       </section>
+
+      {ngjarjet.length > 0 && (
+        <section className="panel">
+          <h2>Aktiviteti</h2>
+          <p className="muted">Kush ndryshoi çfarë. Nuk fshihet dhe nuk ndryshohet.</p>
+          <ol className="activity">
+            {ngjarjet.map((n, i) => (
+              <li key={i}>
+                <span className="activity__dot" aria-hidden="true" />
+                <span className="activity__what">{n.veprimi}</span>
+                <span className="activity__meta">{n.kush} · {n.koha}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       {toast && (
         <Toast mesazhi={toast[0]} ton={toast[1]}>
