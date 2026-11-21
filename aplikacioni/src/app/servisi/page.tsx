@@ -3,6 +3,7 @@ import Hyrja from "@/components/Hyrja";
 import { Marka } from "@/components/Marka";
 import { KartaRiparimi } from "@/components/KartaRiparimi";
 import { Live } from "@/components/Live";
+import { Toast } from "@/components/Toast";
 import { ListaRiparimeve } from "@/components/ListaRiparimeve";
 import { lexoRiparimet, versioniIListes, type Riparim } from "@/lib/riparimet";
 import { profiliIm } from "@/lib/servisi";
@@ -76,13 +77,13 @@ export default async function Servisi({ searchParams }: {
         <h1>Riparimet</h1>
         <p className="muted">{aktive.length === 1 ? "1 telefon" : `${aktive.length} telefona`} në servis</p>
       </header>
-      {m && mesazhet[m] && <p role="alert">{mesazhet[m]}</p>}
       <Link className="action action--block" href="/servisi/i-ri">+ Regjistro riparim</Link>
       {aktive.length === 0 ? (
         <p className="empty">Asnjë telefon në servis. Regjistro riparimin kur klienti sjell telefonin.</p>
       ) : (
         <ListaRiparimeve riparimet={aktive} />
       )}
+      {m && mesazhet[m] && <Toast mesazhi={mesazhet[m]} ton="gabim" />}
       {mbyllura.length > 0 && (
         <section className="closed-list">
           <h2 className="label">Të mbyllura së fundmi</h2>

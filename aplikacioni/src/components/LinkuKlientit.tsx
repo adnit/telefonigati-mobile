@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 // Linku privat që servisi ia jep klientit në banak (Viber, SMS ose kopjim).
-export function LinkuKlientit({ shtegu }: { shtegu: string }) {
+export function LinkuKlientit({ shtegu, kompakt = false }: { shtegu: string; kompakt?: boolean }) {
   const [mesazhi, setMesazhi] = useState("");
 
   async function ndaj() {
@@ -19,6 +19,14 @@ export function LinkuKlientit({ shtegu }: { shtegu: string }) {
       // Anulimi i ndarjes nuk është gabim; kopjimi mund të mos lejohet.
       setMesazhi("Kopjoje linkun nga fusha më poshtë.");
     }
+  }
+
+  if (kompakt) {
+    return (
+      <button className="action action--quiet" onClick={ndaj} title={mesazhi || undefined}>
+        {mesazhi === "Linku u kopjua." ? "U kopjua ✓" : "Ndaj linkun"}
+      </button>
+    );
   }
 
   return (

@@ -5,16 +5,18 @@ import { Live } from "@/components/Live";
 import { Marka } from "@/components/Marka";
 import { Njoftimet } from "@/components/Njoftimet";
 import { StatusHapat, StatusKryesor } from "@/components/Statusi";
-import { gjejMeKod, lexoHistorikun, totali as llogaritTotalin, versioniIRiparimit } from "@/lib/riparimet";
+import { gjejMeKod, lexoHistorikun, lexoServisin, totali as llogaritTotalin, versioniIRiparimit } from "@/lib/riparimet";
+import { pershkrimiIDates } from "@/lib/data";
+import { Toast } from "@/components/Toast";
 import { Dergo } from "@/components/Dergo";
 import { vendosKostoShtese } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-const mesazhet: Record<string, string> = {
-  miratuar: "Faleminderit. Servisi e sheh miratimin dhe vazhdon punën.",
-  refuzuar: "U ruajt. Servisi nuk e bën riparimin shtesë; çmimi mbetet ai i vlerësuar.",
-  vendosur: "Për këtë kosto është vendosur tashmë.",
+const mesazhet: Record<string, [string, "ok" | "gabim"]> = {
+  miratuar: ["Faleminderit. Servisi e sheh miratimin dhe vazhdon punën.", "ok"],
+  refuzuar: ["U ruajt. Riparimi shtesë nuk bëhet; çmimi mbetet ai i vlerësuar.", "ok"],
+  vendosur: ["Për këtë kosto është vendosur tashmë.", "gabim"],
 };
 
 export default async function RiparimiIm({ params, searchParams }: {
@@ -37,7 +39,13 @@ export default async function RiparimiIm({ params, searchParams }: {
     );
   }
   if (!r) notFound();
-  const kohet = await lexoHistorikun(r.id).catch(() => ({}));
+  const [kohet, servisi] = await Promise.all([
+    lexoHistorikun(r.id).catch(() => ({})),
+    lexoServisin().catch(() => null),
+  ]);
+  const eta = r.gatiDeri && (r.statusi === "Pranuar" || r.statusi === "Në riparim") ? pershkrimiIDates(r.gatiDeri) : null;
+  const toast = m ? mesazhet[m] : undefined;
+  const telServisi = servisi?.telefoni ?? null;
   const totali = llogaritTotalin(r);
 
   return (
@@ -50,7 +58,6 @@ export default async function RiparimiIm({ params, searchParams }: {
         <p className="muted">{r.problemi}</p>
       </header>
       <PaInternet perditesuar={r.perditesuar} />
-      {m && mesazhet[m] && <p role="status" className="flash">{mesazhet[m]}</p>}
 
       <section className="panel">
         {r.statusi === "Marrë" ? (
@@ -61,6 +68,13 @@ export default async function RiparimiIm({ params, searchParams }: {
           </div>
         ) : (
           <StatusKryesor statusi={r.statusi} perditesuar={r.perditesuar} />
+        )}
+        {eta && (
+          <p className={`eta${eta.vonese ? " eta--late" : ""}`}>
+            <span className="eta__label">Gati deri më</span>
+            <span className="eta__date">{eta.data}</span>
+            <span className="eta__rel">{eta.vonese ? "pak vonesë" : eta.relativ}</span>
+          </p>
         )}
         <StatusHapat statusi={r.statusi} kohet={kohet} />
       </section>
@@ -109,6 +123,24 @@ export default async function RiparimiIm({ params, searchParams }: {
           <div><dt>{r.statusi === "Marrë" ? "Paguar" : "Për të paguar në servis"}</dt><dd className="price">{totali} €</dd></div>
         </dl>
       </section>
+
+      {servisi && (
+        <section className="panel shop">
+          <p className="label">Servisi</p>
+          <h2>{servisi.emri}</h2>
+          {(servisi.adresa || servisi.orari) && (
+            <p className="muted">{[servisi.adresa, servisi.orari].filter(Boolean).join(" · ")}</p>
+          )}
+          {telServisi && (
+            <div className="actions-row actions-row--two">
+              <a className="action action--quiet" href={`tel:${telServisi}`}>Telefono</a>
+              <a className="action action--quiet" href={`https://wa.me/${telServisi.replace("+", "")}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+            </div>
+          )}
+        </section>
+      )}
+
+      {toast && <Toast mesazhi={toast[0]} ton={toast[1]} />}
     </main>
   );
 }

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { regjistroRiparimin } from "../actions";
 import { FotoPranimi } from "@/components/FotoPranimi";
 import { Dergo } from "@/components/Dergo";
+import { DataGati } from "@/components/DataGati";
 import { vetemServisi } from "@/lib/servisi";
 
 export const dynamic = "force-dynamic";
@@ -26,12 +27,14 @@ export default async function RiparimIRi({ searchParams }: {
         <textarea id="problemi" name="problemi" maxLength={200} rows={3} required placeholder="p.sh. Ekrani i thyer" />
         <label htmlFor="cmimi">Çmimi i vlerësuar (€)</label>
         <input id="cmimi" name="cmimi" inputMode="numeric" pattern="\d{1,4}" maxLength={4} required placeholder="35" />
+        <DataGati />
         <label htmlFor="telefoni">Telefoni i klientit (opsional)</label>
         <input id="telefoni" name="telefoni" type="tel" inputMode="tel" autoComplete="off"
           maxLength={20} placeholder="p.sh. 044 123 456" />
         <p className="hint">Për t&apos;i dërguar linkun në WhatsApp. E sheh vetëm stafi.</p>
         <FotoPranimi />
         {m === "fushe" && <p role="alert">Plotëso pajisjen, problemin dhe një çmim në euro (0–9999).</p>}
+        {m === "data" && <p role="alert">Data e pritur duhet të jetë nga sot deri në 60 ditë.</p>}
         {m === "telefoni" && <p role="alert">Numri i telefonit nuk duket i saktë. Shkruaje si 044 123 456 ose +383 44 123 456.</p>}
         <Dergo pritja="Po regjistrohet…">Regjistro dhe krijo linkun</Dergo>
       </form>
