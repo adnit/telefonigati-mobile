@@ -3,6 +3,7 @@ import Hyrja from "@/components/Hyrja";
 import { Marka } from "@/components/Marka";
 import { KartaRiparimi } from "@/components/KartaRiparimi";
 import { Live } from "@/components/Live";
+import { ListaRiparimeve } from "@/components/ListaRiparimeve";
 import { lexoRiparimet, versioniIListes, type Riparim } from "@/lib/riparimet";
 import { profiliIm } from "@/lib/servisi";
 
@@ -80,9 +81,7 @@ export default async function Servisi({ searchParams }: {
       {aktive.length === 0 ? (
         <p className="empty">Asnjë telefon në servis. Regjistro riparimin kur klienti sjell telefonin.</p>
       ) : (
-        <div className="repair-list">
-          {aktive.map((r) => <KartaRiparimi key={r.id} riparim={r} />)}
-        </div>
+        <ListaRiparimeve riparimet={aktive} />
       )}
       {mbyllura.length > 0 && (
         <section className="closed-list">
