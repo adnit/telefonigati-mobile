@@ -12,6 +12,14 @@ function tekst(formData: FormData, emri: string, max: number) {
   return v.length > 0 && v.length <= max ? v : null;
 }
 
+// Numrat e Kosovës shkruhen zakonisht 044 123 456; WhatsApp i do në formë ndërkombëtare (+38344123456).
+function telefoni(formData: FormData): string | null | "gabim" {
+  const v = String(formData.get("telefoni") ?? "").replace(/[\s\-().]/g, "");
+  if (!v) return null;
+  const n = v.startsWith("00") ? "+" + v.slice(2) : v.startsWith("0") ? "+383" + v.slice(1) : v;
+  return /^\+?[0-9]{8,15}$/.test(n) ? n : "gabim";
+}
+
 function euro(formData: FormData, emri: string) {
   const v = String(formData.get(emri) ?? "").trim();
   if (!/^\d{1,4}$/.test(v)) return null;
@@ -25,14 +33,16 @@ export async function regjistroRiparimin(formData: FormData) {
   const problemi = tekst(formData, "problemi", 200);
   const cmimi = euro(formData, "cmimi");
   if (!pajisja || !problemi || cmimi === null) redirect("/servisi/i-ri?m=fushe");
+  const tel = telefoni(formData);
+  if (tel === "gabim") redirect("/servisi/i-ri?m=telefoni");
   // Fotoja vjen e zvogëluar nga telefoni; pranohet vetëm JPEG brenda kufirit.
   const fotoV = String(formData.get("foto") ?? "");
   const foto = fotoV.startsWith("data:image/jpeg;base64,") && fotoV.length <= 400_000 ? fotoV : null;
 
   const sql = getSql();
-  const rows = await sql`INSERT INTO riparimet (id, kodi, pajisja, problemi, dorezuar, statusi, cmimi, foto)
+  const rows = await sql`INSERT INTO riparimet (id, kodi, pajisja, problemi, dorezuar, statusi, cmimi, foto, telefoni)
     VALUES (nextval('riparimet_nr')::text, replace(gen_random_uuid()::text, '-', ''),
-            ${pajisja}, ${problemi}, current_date, 'Pranuar', ${cmimi}, ${foto})
+            ${pajisja}, ${problemi}, current_date, 'Pranuar', ${cmimi}, ${foto}, ${tel})
     RETURNING id`;
   revalidatePath("/servisi");
   redirect(`/servisi/riparimi/${rows[0].id}?m=regjistruar`);

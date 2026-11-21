@@ -23,7 +23,7 @@ export function LinkuKlientit({ shtegu }: { shtegu: string }) {
 
   return (
     <div className="share">
-      <button className="action action--block" onClick={ndaj}>Dërgo linkun klientit</button>
+      <button className="action action--quiet action--block" onClick={ndaj}>Ndaj ose kopjo linkun</button>
       <p className="muted share__url">{shtegu}</p>
       <p className="muted" role="status">{mesazhi}</p>
     </div>

@@ -3,7 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import { LinkuKlientit } from "@/components/LinkuKlientit";
 import { Live } from "@/components/Live";
 import { StatusHapat } from "@/components/Statusi";
-import { STATUSET, gjejRiparimin, totali, versioniIRiparimit } from "@/lib/riparimet";
+import { Dergo } from "@/components/Dergo";
+import { headers } from "next/headers";
+import { STATUSET, gjejRiparimin, lexoHistorikun, totali, versioniIRiparimit } from "@/lib/riparimet";
 import { vetemServisi } from "@/lib/servisi";
 import { mbyllRiparimin, ndryshoStatusin, shtoKostoShtese } from "../../actions";
 
@@ -35,7 +37,13 @@ export default async function RiparimiServisit({ params, searchParams }: {
   const { m } = await searchParams;
   const r = await gjejRiparimin(id);
   if (!r) notFound();
-  const versioni = await versioniIRiparimit(r.kodi);
+  const [versioni, kohet] = await Promise.all([versioniIRiparimit(r.kodi), lexoHistorikun(r.id)]);
+
+  // Linku i plotë për WhatsApp: adresa e faqes ku po punon stafi (localhost ose Vercel).
+  const h = await headers();
+  const origjina = `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
+  const teksti = `Përshëndetje! Statusin e riparimit të ${r.pajisja} e sheh këtu: ${origjina}/r/${r.kodi}`;
+  const whatsapp = `https://wa.me/${r.telefoni ? r.telefoni.replace("+", "") : ""}?text=${encodeURIComponent(teksti)}`;
 
   return (
     <main>
@@ -59,12 +67,12 @@ export default async function RiparimiServisit({ params, searchParams }: {
       ) : (
         <section className="panel">
           <h2 className="panel__title">Statusi</h2>
-          <StatusHapat statusi={r.statusi} />
+          <StatusHapat statusi={r.statusi} kohet={kohet} />
           <form action={ndryshoStatusin} className="segmented" aria-label="Ndrysho statusin">
             <input type="hidden" name="id" value={r.id} />
             {STATUSET.map((s) => (
-              <button key={s} name="statusi" value={s} disabled={s === r.statusi}
-                aria-pressed={s === r.statusi}>{s}</button>
+              <Dergo key={s} className="" name="statusi" value={s} pritja={s}
+                disabled={s === r.statusi} shtypur={s === r.statusi}>{s}</Dergo>
             ))}
           </form>
           {r.statusi === "Gati për marrje" && (
@@ -73,9 +81,7 @@ export default async function RiparimiServisit({ params, searchParams }: {
             ) : (
               <form action={mbyllRiparimin} className="close-form">
                 <input type="hidden" name="id" value={r.id} />
-                <button className="action action--block" type="submit">
-                  Klienti e mori · {totali(r)} €
-                </button>
+                <Dergo pritja="Po mbyllet…">Klienti e mori · {totali(r)} €</Dergo>
               </form>
             )
           )}
@@ -113,13 +119,17 @@ export default async function RiparimiServisit({ params, searchParams }: {
           <input id="arsyeja" name="arsyeja" maxLength={200} required placeholder="p.sh. Porta e karikimit është e dëmtuar" />
           <label htmlFor="cmimi">Shuma shtesë (€)</label>
           <input id="cmimi" name="cmimi" inputMode="numeric" pattern="\d{1,4}" maxLength={4} required placeholder="15" />
-          <button className="action action--block" type="submit">Dërgo koston klientit</button>
+          <Dergo pritja="Po dërgohet…">Dërgo koston klientit</Dergo>
         </form>
       )}
 
       <section className="panel">
         <h2>Linku i klientit</h2>
         {r.statusi === "Marrë" && <p className="muted">Linku mbyllet 30 ditë pas marrjes.</p>}
+        <a className="action action--whatsapp action--block" href={whatsapp} target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z"/></svg>
+          {r.telefoni ? "Dërgo në WhatsApp" : "Dërgo në WhatsApp (zgjidh kontaktin)"}
+        </a>
         <LinkuKlientit shtegu={`/r/${r.kodi}`} />
       </section>
     </main>

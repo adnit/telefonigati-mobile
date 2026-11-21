@@ -5,7 +5,8 @@ import { Live } from "@/components/Live";
 import { Marka } from "@/components/Marka";
 import { Njoftimet } from "@/components/Njoftimet";
 import { StatusHapat, StatusKryesor } from "@/components/Statusi";
-import { gjejMeKod, totali as llogaritTotalin, versioniIRiparimit } from "@/lib/riparimet";
+import { gjejMeKod, lexoHistorikun, totali as llogaritTotalin, versioniIRiparimit } from "@/lib/riparimet";
+import { Dergo } from "@/components/Dergo";
 import { vendosKostoShtese } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +37,7 @@ export default async function RiparimiIm({ params, searchParams }: {
     );
   }
   if (!r) notFound();
+  const kohet = await lexoHistorikun(r.id).catch(() => ({}));
   const totali = llogaritTotalin(r);
 
   return (
@@ -60,7 +62,7 @@ export default async function RiparimiIm({ params, searchParams }: {
         ) : (
           <StatusKryesor statusi={r.statusi} perditesuar={r.perditesuar} />
         )}
-        <StatusHapat statusi={r.statusi} />
+        <StatusHapat statusi={r.statusi} kohet={kohet} />
       </section>
 
       {r.statusi !== "Marrë" && process.env.VAPID_PUBLIC_KEY && (
@@ -79,8 +81,8 @@ export default async function RiparimiIm({ params, searchParams }: {
             <input type="hidden" name="kodi" value={r.kodi} />
             <VetemMeRrjet>
               <div className="choice">
-                <button className="action" name="vendimi" value="miratuar">Mirato</button>
-                <button className="action action--quiet" name="vendimi" value="refuzuar">Refuzo</button>
+                <Dergo className="action" name="vendimi" value="miratuar" pritja="Po ruhet…">Mirato</Dergo>
+                <Dergo className="action action--quiet" name="vendimi" value="refuzuar" pritja="Po ruhet…">Refuzo</Dergo>
               </div>
             </VetemMeRrjet>
           </form>

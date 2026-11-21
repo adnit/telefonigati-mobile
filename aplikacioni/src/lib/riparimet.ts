@@ -64,15 +64,17 @@ export async function lexoRiparimet(): Promise<Riparim[]> {
 }
 
 // Vetëm për servisin: një riparim sipas numrit.
-export async function gjejRiparimin(id: string): Promise<Riparim | undefined> {
+// Vetëm për stafin: riparimi me numrin e telefonit të klientit (për WhatsApp).
+// Numri nuk lexohet kurrë nga faqja e klientit (gjejMeKod).
+export async function gjejRiparimin(id: string): Promise<(Riparim & { telefoni: string | null }) | undefined> {
   const sql = getSql();
   const rows = await sql`SELECT id, kodi, pajisja, problemi, to_char(dorezuar, 'DD.MM.YYYY') AS dorezuar,
     statusi, cmimi, shtese_arsyeja, shtese_cmimi, vendimi,
     to_char(perditesuar AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY HH24:MI') AS perditesuar,
     to_char(marre AT TIME ZONE 'Europe/Belgrade', 'DD.MM.YYYY') AS marre
-    , foto FROM riparimet WHERE id = ${id}`;
-  const r = rows[0] as Rresht | undefined;
-  return r ? neRiparim(r) : undefined;
+    , foto, telefoni FROM riparimet WHERE id = ${id}`;
+  const r = rows[0] as (Rresht & { telefoni: string | null }) | undefined;
+  return r ? { ...neRiparim(r), telefoni: r.telefoni } : undefined;
 }
 
 // Për klientin: vetëm riparimi që i përket kodit të linkut të tij.
@@ -110,4 +112,17 @@ export async function versioniIListes(): Promise<string> {
   const rows = await sql`SELECT coalesce((extract(epoch FROM max(perditesuar)) * 1000)::bigint, 0)::text
     || '-' || count(*)::text AS v FROM riparimet`;
   return rows[0].v as string;
+}
+
+export type Hap = { statusi: Statusi; koha: string };
+
+// Kur ndodhi secili hap (shkruhet nga databaza me trigger, shih schema-perfundimi.sql).
+// Për çdo status mbahet koha e fundit, që një rikthim të mos e ngatërrojë shiritin.
+export async function lexoHistorikun(riparimId: string): Promise<Partial<Record<Statusi, string>>> {
+  const sql = getSql();
+  const rows = await sql`SELECT DISTINCT ON (statusi) statusi,
+      to_char(koha AT TIME ZONE 'Europe/Belgrade', 'DD.MM · HH24:MI') AS koha
+    FROM historiku WHERE riparim_id = ${riparimId}
+    ORDER BY statusi, koha DESC`;
+  return Object.fromEntries((rows as Hap[]).map((h) => [h.statusi, h.koha]));
 }

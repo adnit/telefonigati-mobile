@@ -34,7 +34,7 @@ export function StatusKryesor({ statusi, perditesuar }: { statusi: Statusi; perd
 
 // Tri hapat si shirit progresi: hapat para statusit aktual janë të kryer;
 // "Gati për marrje" është i fundit, prandaj aty janë të tre të plotë.
-export function StatusHapat({ statusi }: { statusi: Statusi }) {
+export function StatusHapat({ statusi, kohet = {} }: { statusi: Statusi; kohet?: Partial<Record<Statusi, string>> }) {
   // "Marrë" nuk është në shirit: riparimi ka kaluar të tre hapat.
   const aktual = statusi === "Marrë" ? HAPAT.length - 1 : HAPAT.indexOf(statusi);
   const iKryer = (i: number) => i < aktual || aktual === HAPAT.length - 1;
@@ -48,6 +48,7 @@ export function StatusHapat({ statusi }: { statusi: Statusi }) {
         >
           <span className="step__bar" aria-hidden="true" />
           <span className="step__label">{hapi}</span>
+          <span className="step__time">{iKryer(i) || i === aktual ? kohet[hapi] ?? "" : ""}</span>
         </li>
       ))}
     </ol>
