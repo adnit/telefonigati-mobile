@@ -1,5 +1,5 @@
-# Çdo push dhe pull request kontrollon që aplikacioni ndërtohet pa gabime.
-# Nuk përdor sekrete dhe nuk lidhet me databazën: faqet lexojnë Neon vetëm kur hapen.
+# Çdo push dhe pull request: lint, build, tipet dhe testet e rregullave.
+# Testet end-to-end ekzekutohen kur ekziston sekreti TEST_DATABASE_URL (një degë Neon vetëm për teste).
 name: CI
 
 on:
@@ -24,3 +24,41 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: npx tsc --noEmit
+      - name: Testet e rregullave
+        run: npm test
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+    defaults:
+      run:
+        working-directory: aplikacioni
+    steps:
+      - name: Pa sekretin TEST_DATABASE_URL testet end-to-end anashkalohen
+        if: env.DATABASE_URL == ''
+        run: echo "::notice::Shto sekretin TEST_DATABASE_URL (një degë Neon) për të ekzekutuar testet end-to-end."
+      - uses: actions/checkout@v4
+        if: env.DATABASE_URL != ''
+      - uses: actions/setup-node@v4
+        if: env.DATABASE_URL != ''
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: aplikacioni/package-lock.json
+      - if: env.DATABASE_URL != ''
+        run: npm ci --no-audit --no-fund
+      - if: env.DATABASE_URL != ''
+        run: npx playwright install --with-deps chromium
+      - if: env.DATABASE_URL != ''
+        run: npm run build
+      - name: Testet end-to-end
+        if: env.DATABASE_URL != ''
+        run: NEXTAUTH_SECRET="$(openssl rand -hex 32)" npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: aplikacioni/test-results
+          retention-days: 7
