@@ -52,9 +52,10 @@ export function Njoftimet({ kodi, celesi }: { kodi: string; celesi: string }) {
     }
   }
 
-  if (gjendja === "kontroll") return null;
+  // Gjatë kontrollit karta shfaqet menjëherë në gjendjen më të zakonshme (butoni i çaktivizuar),
+  // që të mos shfaqet më vonë dhe ta shtyjë poshtë pjesën tjetër të faqes.
   return (
-    <section className="panel notify">
+    <section className="panel notify" aria-busy={gjendja === "kontroll"}>
       <div className="notify__row">
         <span className={`notify__icon${gjendja === "aktive" ? " notify__icon--on" : ""}`} aria-hidden="true">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"
@@ -66,7 +67,7 @@ export function Njoftimet({ kodi, celesi }: { kodi: string; celesi: string }) {
           <h2>{gjendja === "aktive" ? "Njoftimet janë aktive" : "Merr njoftim kur të jetë gati"}</h2>
           <p className="muted">
             {gjendja === "aktive" && "Të njoftojmë në këtë telefon kur servisi ndryshon statusin ose kërkon miratim."}
-            {(gjendja === "mundet" || gjendja === "duke") && "Pa e hapur faqen dhe pa telefonuar në servis."}
+            {(gjendja === "mundet" || gjendja === "duke" || gjendja === "kontroll") && "Pa e hapur faqen dhe pa telefonuar në servis."}
             {gjendja === "refuzuar" && "Njoftimet janë bllokuar për këtë faqe. Lejoji te cilësimet e shfletuesit."}
             {gjendja === "iphone" && "Në iPhone: prek Share → Add to Home Screen, hape TelefoniGati nga ekrani dhe aktivizo njoftimet."}
             {gjendja === "pa-mbeshtetje" && "Ky shfletues nuk i mbështet njoftimet. Statusi përditësohet vetë kur faqja është e hapur."}
@@ -74,8 +75,8 @@ export function Njoftimet({ kodi, celesi }: { kodi: string; celesi: string }) {
           </p>
         </div>
       </div>
-      {(gjendja === "mundet" || gjendja === "duke" || gjendja === "gabim") && (
-        <button className="action action--quiet action--block" onClick={aktivizo} disabled={gjendja === "duke"}>
+      {(gjendja === "mundet" || gjendja === "duke" || gjendja === "gabim" || gjendja === "kontroll") && (
+        <button className="action action--quiet action--block" onClick={aktivizo} disabled={gjendja === "duke" || gjendja === "kontroll"}>
           {gjendja === "duke" ? "Po aktivizohet…" : "Më njofto"}
         </button>
       )}

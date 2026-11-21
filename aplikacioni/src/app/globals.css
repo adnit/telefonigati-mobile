@@ -8,7 +8,7 @@
   --line-strong: rgb(255 255 255 / 0.12);
   --text: #f2f4f7;
   --muted: #8d95a3;
-  --faint: #5d6574;
+  --faint: #7a8292; /* 4.7:1 mbi --surface, mbi pragun WCAG AA */
 
   --accent: #7ba3ff;
   --accent-strong: #9bb9ff;
