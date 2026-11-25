@@ -4,7 +4,7 @@ import { useFormStatus } from "react-dom";
 
 // Butoni i dërgimit të formularit: gjatë pritjes së serverit çaktivizohet dhe tregon që po punon,
 // që një prekje e dytë të mos dërgojë sërish.
-export function Dergo({ children, pritja = "Po ruhet…", className = "action action--block", name, value, disabled = false, shtypur }: {
+export function Dergo({ children, pritja = "Po ruhet…", className = "btn btn--primary btn--block", name, value, disabled = false, shtypur }: {
   children: React.ReactNode;
   pritja?: string;
   className?: string;

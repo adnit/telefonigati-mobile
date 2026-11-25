@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Nav } from "@/components/Nav";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import QRCode from "qrcode";
@@ -22,10 +22,8 @@ export default async function Fleta({ params }: { params: Promise<{ id: string }
   const eta = r.gatiDeri ? pershkrimiIDates(r.gatiDeri) : null;
 
   return (
-    <main className="slip-page">
-      <div className="no-print">
-        <Link className="back" href={`/servisi/riparimi/${r.id}`}>← Riparimi</Link>
-      </div>
+    <main>
+      <Nav prapa={{ href: `/servisi/riparimi/${r.id}`, emri: "Riparimi" }} titulli="Fleta me QR" />
       <article className="slip">
         <header className="slip__head">
           <p className="slip__shop">{servisi.emri}</p>
@@ -46,9 +44,9 @@ export default async function Fleta({ params }: { params: Promise<{ id: string }
           </footer>
         )}
       </article>
-      <div className="no-print slip__actions">
+      <div className="no-print">
         <Printo />
-        <p className="hint">Ose ktheje ekranin nga klienti që ta skanojë direkt.</p>
+        <p className="group__foot" style={{ textAlign: "center", marginTop: 8 }}>Ose ktheje ekranin nga klienti që ta skanojë direkt.</p>
       </div>
     </main>
   );

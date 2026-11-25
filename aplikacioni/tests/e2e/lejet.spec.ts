@@ -25,13 +25,15 @@ test("vizitori nuk hyn në faqet e stafit", async ({ browser }) => {
   }
 });
 
-test("stafi nuk hap cilësimet e pronarit", async ({ browser }) => {
+test("stafi sheh vetëm llogarinë dhe pamjen te cilësimet, jo servisin e stafin", async ({ browser }) => {
   const c = await browser.newContext();
   await hyr(c, STAFI, "servis");
   const p = await c.newPage();
   await p.goto("/servisi/cilesimet");
-  await expect(p).toHaveURL(/\/servisi$/);
-  await expect(p.locator(".tabbar")).not.toContainText("Cilësimet");
+  await expect(p.locator("main h1")).toHaveText("Cilësimet");
+  await expect(p.getByRole("group", { name: "Pamja" })).toBeVisible();
+  await expect(p.locator("#emri")).toHaveCount(0);
+  await expect(p.getByRole("button", { name: "Fto" })).toHaveCount(0);
 });
 
 test("roli i hequr gjatë punës: serveri e refuzon veprimin nga faqja e hapur", async ({ browser }) => {

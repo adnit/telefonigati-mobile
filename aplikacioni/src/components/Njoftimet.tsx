@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Ikona } from "@/components/Ikona";
 import { ruajAbonimin } from "@/app/r/[kodi]/actions";
 
 type Gjendja = "kontroll" | "mundet" | "aktive" | "duke" | "refuzuar" | "pa-mbeshtetje" | "iphone" | "gabim";
@@ -54,32 +55,33 @@ export function Njoftimet({ kodi, celesi }: { kodi: string; celesi: string }) {
 
   // Gjatë kontrollit karta shfaqet menjëherë në gjendjen më të zakonshme (butoni i çaktivizuar),
   // që të mos shfaqet më vonë dhe ta shtyjë poshtë pjesën tjetër të faqes.
+  const butoni = gjendja === "mundet" || gjendja === "duke" || gjendja === "gabim" || gjendja === "kontroll";
   return (
-    <section className="panel notify" aria-busy={gjendja === "kontroll"}>
-      <div className="notify__row">
-        <span className={`notify__icon${gjendja === "aktive" ? " notify__icon--on" : ""}`} aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"
-            strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-          </svg>
-        </span>
-        <div>
-          <h2>{gjendja === "aktive" ? "Njoftimet janë aktive" : "Merr njoftim kur të jetë gati"}</h2>
-          <p className="muted">
-            {gjendja === "aktive" && "Të njoftojmë në këtë telefon kur servisi ndryshon statusin ose kërkon miratim."}
-            {(gjendja === "mundet" || gjendja === "duke" || gjendja === "kontroll") && "Pa e hapur faqen dhe pa telefonuar në servis."}
-            {gjendja === "refuzuar" && "Njoftimet janë bllokuar për këtë faqe. Lejoji te cilësimet e shfletuesit."}
-            {gjendja === "iphone" && "Në iPhone: prek Share → Add to Home Screen, hape TelefoniGati nga ekrani dhe aktivizo njoftimet."}
-            {gjendja === "pa-mbeshtetje" && "Ky shfletues nuk i mbështet njoftimet. Statusi përditësohet vetë kur faqja është e hapur."}
-            {gjendja === "gabim" && "Njoftimet nuk u aktivizuan. Provo përsëri pak më vonë."}
-          </p>
+    <section className="group" aria-busy={gjendja === "kontroll"} aria-label="Njoftimet">
+      <div className="group__body">
+        <div className="row row--icon">
+          <span className="row__icon" style={{ "--icon-bg": gjendja === "aktive" ? "var(--gati-fill)" : "#ff3b30" } as React.CSSProperties}>
+            <Ikona emri="zile" madhesia={17} />
+          </span>
+          <span className="row__main">
+            <span className="row__title">{gjendja === "aktive" ? "Njoftimet janë aktive" : "Njoftimi kur të jetë gati"}</span>
+            <span className="row__sub">
+              {gjendja === "aktive" && "Të njoftojmë në këtë telefon kur ndryshon statusi."}
+              {(gjendja === "mundet" || gjendja === "duke" || gjendja === "kontroll") && "Pa e hapur faqen dhe pa telefonuar."}
+              {gjendja === "refuzuar" && "Të bllokuara. Lejoji te cilësimet e shfletuesit."}
+              {gjendja === "iphone" && "Në iPhone: Share → Add to Home Screen, pastaj hape nga ekrani."}
+              {gjendja === "pa-mbeshtetje" && "Ky shfletues nuk i mbështet. Faqja përditësohet vetë kur është e hapur."}
+              {gjendja === "gabim" && "Nuk u aktivizuan. Provo përsëri pak më vonë."}
+            </span>
+          </span>
+          {butoni && (
+            <button type="button" className="btn btn--tinted btn--small" onClick={aktivizo} disabled={gjendja === "duke" || gjendja === "kontroll"}>
+              {gjendja === "duke" ? "…" : "Më njofto"}
+            </button>
+          )}
+          {gjendja === "aktive" && <Ikona emri="rregull" madhesia={20} trashesia={2.6} className="chev" />}
         </div>
       </div>
-      {(gjendja === "mundet" || gjendja === "duke" || gjendja === "gabim" || gjendja === "kontroll") && (
-        <button className="action action--quiet action--block" onClick={aktivizo} disabled={gjendja === "duke" || gjendja === "kontroll"}>
-          {gjendja === "duke" ? "Po aktivizohet…" : "Më njofto"}
-        </button>
-      )}
     </section>
   );
 }

@@ -12,9 +12,14 @@ Projekti individual në lëndën Programimi për Pajisje Mobile, Kolegji AAB, 20
 
 ## Çfarë bën
 
+Pamja ndjek temën e telefonit (e çelët ose e errët, me zgjedhje me dorë), me stil "Liquid Glass": shirit i poshtëm xhami që noton, butona të rrumbullakët xhami, fletë që ngjiten nga poshtë dhe mbyllen duke i tërhequr.
+
 - **Servisi** (hyrje me Google): regjistron riparimin në banak me foto, IMEI (i skanuar me kamerë ose i shkruar, me kontrollin Luhn), numrin e klientit dhe datën e pritur; i jep klientit fletën me QR ose linkun në WhatsApp; ndryshon statusin nga një fletë që ngjitet nga poshtë (me “Zhbëj”), shton koston shtesë dhe shënime të brendshme, dhe e mbyll riparimin kur klienti e merr telefonin. Lista ka kërkim dhe filtra; “Përmbledhja” tregon javën e fundit dhe hipotezën e projektit: sa klientë thonë se linku u kurseu një telefonatë (pragu 80%). Çdo riparim ka regjistrin e veprimeve: kush ndryshoi çfarë dhe kur.
-- **Pronari** menaxhon stafin me ftesa me email dhe të dhënat e servisit (emri, telefoni, orari, adresa) te “Cilësimet”.
-- **Klienti** (pa llogari, me link privat ose QR): sheh statusin me kohën e secilit hap dhe datën e pritur, fotot e pranimit dhe shumën; miraton ose refuzon koston shtesë; merr njoftim kur telefoni është gati; telefonon servisin ose i shkruan në WhatsApp; e sheh statusin e fundit edhe pa internet. Pas marrjes përgjigjet me një prekje: “A të kurseu ky link një telefonatë?”
+- **Pranimi në banak**: marka dhe modeli zgjidhen me një prekje; shabllonet nga çmimorja plotësojnë problemin, çmimin dhe datën e pritur. Çmimi i shkruar me dorë nuk mbishkruhet.
+- **Tabela** (kanban): riparimet në tri kolona; karta tërhiqet te kolona tjetër ose kalon me →.
+- **Marrja**: klienti nënshkruan në ekranin e stafit; nënshkrimi ruhet me riparimin dhe e sheh edhe klienti.
+- **Pronari** menaxhon çmimoren, me ftesa me email dhe të dhënat e servisit (emri, telefoni, orari, adresa) te “Cilësimet”.
+- **Klienti** (pa llogari, me link privat ose QR): kur statusi ndryshon me faqen të hapur, karta animohet dhe nga lart zbret njoftimi “Telefoni yt është gati!”; sheh statusin me kohën e secilit hap dhe datën e pritur, fotot e pranimit dhe shumën; miraton ose refuzon koston shtesë; merr njoftim kur telefoni është gati; telefonon servisin ose i shkruan në WhatsApp; e sheh statusin e fundit edhe pa internet. Pas marrjes përgjigjet me një prekje: “A të kurseu ky link një telefonatë?”
 - **Siguria**: rolet kontrollohen në server, linku i klientit është kod i rastësishëm 32-shifror dhe skadon 30 ditë pas marrjes, numri i klientit dhe shënimet nuk i shfaqen kurrë klientit, faqet nuk indeksohen dhe linku nuk dërgohet si Referer. Kodet e gabuara bllokohen pas 20 provave në 10 minuta për çdo IP (ruhet vetëm hash-i), dhe Content-Security-Policy lejon skripte e lidhje vetëm nga vetë aplikacioni.
 
 ## Nisja
@@ -57,7 +62,7 @@ NEXTAUTH_SECRET="vlerë e rastësishme"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-Databaza: ekzekuto me radhë `schema.sql`, `schema-java05.sql`, `schema-java05b.sql`, `schema-java08.sql`, `schema-mbyllja.sql`, `schema-njoftimet.sql`, `schema-perfundimi.sql`, `schema-v2.sql` dhe `schema-v3.sql` në Neon SQL Editor. Pas hyrjes së parë me Google, bëje llogarinë tënde pronar; stafin tjetër e fton pastaj nga “Cilësimet”:
+Databaza: çdo skedar SQL ekzekutohet në një transaksion me `npm run db:migrate -- <skedari.sql>`. Ekzekuto me radhë `schema.sql`, `schema-java05.sql`, `schema-java05b.sql`, `schema-java08.sql`, `schema-mbyllja.sql`, `schema-njoftimet.sql`, `schema-perfundimi.sql`, `schema-v2.sql`, `schema-v3.sql` dhe `schema-v4.sql` (ose ngjiti në Neon SQL Editor). Pas hyrjes së parë me Google, bëje llogarinë tënde pronar; stafin tjetër e fton pastaj nga “Cilësimet”:
 
 ```sql
 UPDATE profilet SET roli = 'pronar' WHERE email = 'emaili.yt@gmail.com';

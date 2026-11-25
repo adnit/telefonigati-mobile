@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Marka } from "@/components/Marka";
 import { redirect } from "next/navigation";
+import { Ikona } from "@/components/Ikona";
+import { ZgjedhTemen } from "@/components/Tema";
 
 const mesazhet: Record<string, string> = {
   kodi: "Ky link nuk është i vlefshëm. Kërkoja servisit linkun e riparimit.",
@@ -21,25 +22,29 @@ export default async function Home({ searchParams }: {
   const { m } = await searchParams;
   return (
     <main>
-      <Marka />
-      <header className="hero">
-        <h1 className="display">Ku është telefoni yt tani?</h1>
-        <p className="lead">Shiko statusin e riparimit dhe mirato koston shtesë nga telefoni, pa e thirrur servisin.</p>
-      </header>
-
-      <section className="panel">
-        <h2>Ke lënë telefonin në servis?</h2>
-        <p className="muted">Hape linkun që të dërgoi servisi, ose ngjite këtu.</p>
-        <form action={hapKodin} className="form">
-          <label htmlFor="kodi">Linku ose kodi i riparimit</label>
-          <input id="kodi" name="kodi" autoComplete="off" autoCapitalize="none" autoCorrect="off"
-            enterKeyHint="go" required />
-          {m && mesazhet[m] && <p role="alert">{mesazhet[m]}</p>}
-          <button className="action action--block" type="submit">Shiko riparimin</button>
-        </form>
+      <section className="hero" style={{ paddingTop: "calc(56px + env(safe-area-inset-top, 0px))" }}>
+        <span className="hero__icon"><Ikona emri="rregull" madhesia={40} trashesia={2.6} /></span>
+        <h1>Ku është telefoni yt tani?</h1>
+        <p>Shiko statusin e riparimit dhe mirato koston shtesë nga telefoni, pa e thirrur servisin.</p>
       </section>
 
-      <p className="footer-link"><Link href="/servisi">Hyrja për servisin →</Link></p>
+      <form action={hapKodin}>
+        {m && mesazhet[m] && <p className="alert" role="alert"><Ikona emri="kujdes" madhesia={18} />{mesazhet[m]}</p>}
+        <div className="group">
+          <div className="group__body">
+            <div className="field">
+              <label htmlFor="kodi">Linku ose kodi i riparimit</label>
+              <input id="kodi" name="kodi" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false}
+                enterKeyHint="go" required placeholder="Ngjite linkun që të dërgoi servisi" />
+            </div>
+          </div>
+          <p className="group__foot">Zakonisht nuk të duhet: hape direkt linkun nga WhatsApp ose skano QR-në në fletë.</p>
+        </div>
+        <button className="btn btn--primary btn--block" type="submit">Shiko riparimin</button>
+      </form>
+
+      <Link className="footer-link" href="/servisi">Hyrja për servisin</Link>
+      <div className="theme-pick"><ZgjedhTemen /></div>
     </main>
   );
 }

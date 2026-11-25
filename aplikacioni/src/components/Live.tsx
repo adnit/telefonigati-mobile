@@ -3,11 +3,10 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
-const INTERVALI = 5000;
 
-// Pyet serverin çdo 5 sekonda nëse ka ndryshuar diçka dhe rifreskon faqen vetëm atëherë.
+// Pyet serverin çdo disa sekonda (5 si parazgjedhje) nëse ka ndryshuar diçka dhe rifreskon faqen vetëm atëherë.
 // Ndalet kur faqja është në sfond ose pa internet, që të mos harxhojë bateri e të dhëna.
-export function Live({ url, versioni }: { url: string; versioni: string }) {
+export function Live({ url, versioni, intervali = 5000 }: { url: string; versioni: string; intervali?: number }) {
   const router = useRouter();
   const iFundit = useRef(versioni);
 
@@ -31,14 +30,14 @@ export function Live({ url, versioni }: { url: string; versioni: string }) {
         // Rrjeti ra: provojmë sërish në raundin tjetër.
       }
     }
-    const id = window.setInterval(kontrollo, INTERVALI);
+    const id = window.setInterval(kontrollo, intervali);
     document.addEventListener("visibilitychange", kontrollo);
     return () => {
       aktiv = false;
       window.clearInterval(id);
       document.removeEventListener("visibilitychange", kontrollo);
     };
-  }, [url, router]);
+  }, [url, router, intervali]);
 
   return null;
 }

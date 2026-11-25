@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { Ikona } from "@/components/Ikona";
 
 function subscribe(cb: () => void) {
   window.addEventListener("online", cb);
@@ -21,7 +22,8 @@ export function PaInternet({ perditesuar }: { perditesuar: string }) {
   if (online) return null;
   return (
     <p role="status" className="offline-banner">
-      Pa internet · po sheh kopjen e ruajtur ({perditesuar}). Statusi mund të ketë ndryshuar.
+      <Ikona emri="wifiJo" madhesia={18} />
+      <span>Pa internet · po sheh kopjen e ruajtur ({perditesuar}). Statusi mund të ketë ndryshuar.</span>
     </p>
   );
 }
@@ -32,7 +34,7 @@ export function VetemMeRrjet({ children }: { children: React.ReactNode }) {
   return (
     <fieldset className="plain" disabled={!online}>
       {children}
-      {!online && <p className="muted">Lidhu me internet për të vendosur.</p>}
+      {!online && <p className="card__sub" style={{ textAlign: "center", marginTop: 10 }}>Lidhu me internet për të vendosur.</p>}
     </fieldset>
   );
 }

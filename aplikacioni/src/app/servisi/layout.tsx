@@ -7,7 +7,7 @@ export default async function ServisiLayout({ children }: { children: React.Reac
   return (
     <div className={p ? "has-tabbar" : undefined}>
       {children}
-      {p && <Skeda pronar={p.roli === "pronar"} />}
+      {p && <Skeda />}
     </div>
   );
 }

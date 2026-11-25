@@ -3,9 +3,13 @@ import { notFound } from "next/navigation";
 import { PaInternet, VetemMeRrjet } from "@/components/Rrjeti";
 import { Live } from "@/components/Live";
 import { Marka } from "@/components/Marka";
+import { Ikona, IkonaWhatsApp } from "@/components/Ikona";
+import { PageTitle } from "@/components/Nav";
+import { ZgjedhTemen } from "@/components/Tema";
+import { StatusLive } from "@/components/StatusLive";
 import { Njoftimet } from "@/components/Njoftimet";
 import { StatusHapat, StatusKryesor } from "@/components/Statusi";
-import { gjejMeKod, kaPershtypje, lexoHistorikunMeKod, lexoServisin, totali as llogaritTotalin, versioniIRiparimit } from "@/lib/riparimet";
+import { gjejMeKod, kaPershtypje, lexoNenshkrimin, lexoHistorikunMeKod, lexoServisin, totali as llogaritTotalin, versioniIRiparimit } from "@/lib/riparimet";
 import { pershkrimiIDates } from "@/lib/data";
 import { Toast } from "@/components/Toast";
 import { eshteBllokuar, shenoKodTeGabuar } from "@/lib/kufiri";
@@ -30,10 +34,10 @@ export default async function RiparimiIm({ params, searchParams }: {
   if (await eshteBllokuar().catch(() => false)) {
     return (
       <main>
-        <section className="panel panel--center">
-          <h1>Shumë prova</h1>
-          <p className="muted">Ky telefon provoi shumë linqe të gabuara. Provo sërish pas 10 minutash ose kërkoja servisit linkun e saktë.</p>
-        </section>
+        <div className="card card--center" style={{ marginTop: "calc(60px + env(safe-area-inset-top, 0px))" }}>
+          <h1 style={{ fontSize: "1.375rem" }}>Shumë prova</h1>
+          <p className="card__sub">Ky telefon provoi shumë linqe të gabuara. Provo sërish pas 10 minutash ose kërkoja servisit linkun e saktë.</p>
+        </div>
       </main>
     );
   }
@@ -41,17 +45,21 @@ export default async function RiparimiIm({ params, searchParams }: {
   let versioni: string | null = null;
   let kohet: Partial<Record<string, string>> = {};
   let servisi: Awaited<ReturnType<typeof lexoServisin>> | null = null;
+  let nenshkrimi: string | null = null;
   try {
     // Të katër leximet njëherësh: një pritje e vetme te databaza, jo katër me radhë.
-    [r, versioni, kohet, servisi] = await Promise.all([
+    [r, versioni, kohet, servisi, nenshkrimi] = await Promise.all([
       gjejMeKod(kodi), versioniIRiparimit(kodi), lexoHistorikunMeKod(kodi), lexoServisin().catch(() => null),
+      lexoNenshkrimin({ kodi }).catch(() => null),
     ]);
   } catch {
     return (
       <main>
-        <h1>TelefoniGati</h1>
-        <p role="alert">Nuk u lidhëm me servisin. Provo përsëri pak më vonë.</p>
-        <Link className="action" href={`/r/${kodi}`}>Provo përsëri</Link>
+        <div className="card card--center" style={{ marginTop: "calc(60px + env(safe-area-inset-top, 0px))" }}>
+          <h1 style={{ fontSize: "1.375rem" }}>Pa lidhje me servisin</h1>
+          <p className="card__sub" role="alert">Provo përsëri pak më vonë.</p>
+          <Link className="btn btn--primary" href={`/r/${kodi}`}>Provo përsëri</Link>
+        </div>
       </main>
     );
   }
@@ -65,109 +73,133 @@ export default async function RiparimiIm({ params, searchParams }: {
   const totali = llogaritTotalin(r);
   const pyetPershtypjen = r.statusi === "Marrë" && !(await kaPershtypje(kodi).catch(() => true));
 
+  const mbyllur = r.statusi === "Marrë";
+  const ngjyra = (c: string) => ({ "--icon-bg": c }) as React.CSSProperties;
+
   return (
     <main>
-      {versioni && r.statusi !== "Marrë" && <Live url={`/api/r/${kodi}/versioni`} versioni={versioni} />}
-      <Marka />
-      <header className="page-head">
-        <p className="label">Riparimi nr. {r.id}</p>
-        <h1>{r.pajisja}</h1>
-        <p className="muted">{r.problemi}</p>
-      </header>
+      {versioni && !mbyllur && <Live url={`/api/r/${kodi}/versioni`} versioni={versioni} intervali={3000} />}
+      <StatusLive statusi={r.statusi} />
+      <div className="brandbar"><Marka /></div>
+      <PageTitle sipër={`Riparimi nr. ${r.id}${servisi ? ` · ${servisi.emri}` : ""}`} titulli={r.pajisja} nentitulli={r.problemi} />
       <PaInternet perditesuar={r.perditesuar} />
 
-      <section className="panel">
-        {r.statusi === "Marrë" ? (
-          <div className="status-hero status-hero--marre">
-            <p className="label">Riparimi u mbyll</p>
-            <p className="status-hero__value"><span className="status-hero__dot" aria-hidden="true" />E more më {r.marre}</p>
-            <p className="status-hero__time">Faleminderit që zgjodhe servisin tonë.</p>
-          </div>
+      <section className="status-card" aria-label="Statusi">
+        {mbyllur ? (
+<>
+          <StatusKryesor statusi="Marrë" etiketa="Riparimi u mbyll" vlera={`E more më ${r.marre}`} koha="Faleminderit që zgjodhe servisin tonë." />
+          {nenshkrimi && (
+            <>
+              <p className="signature-label">Marrja u konfirmua me nënshkrimin tënd</p>
+              {/* eslint-disable-next-line @next/next/no-img-element -- PNG i vogël nga databaza */}
+              <div className="signature-shown"><img src={nenshkrimi} alt="Nënshkrimi në marrje" /></div>
+            </>
+          )}
+          </>
         ) : (
-          <StatusKryesor statusi={r.statusi} perditesuar={r.perditesuar} />
+          <StatusKryesor statusi={r.statusi} koha={<>Përditësuar {r.perditesuar} · përditësohet vetë</>} live />
         )}
         {eta && (
-          <p className={`eta${eta.vonese ? " eta--late" : ""}`}>
-            <span className="eta__label">Gati deri më</span>
-            <span className="eta__date">{eta.data}</span>
+          <div className={`eta${eta.vonese ? " eta--late" : ""}`}>
+            <Ikona emri="kalendar" madhesia={20} />
+            <span className="eta__text"><span className="eta__label">Gati deri më</span><span className="eta__date">{eta.data}</span></span>
             <span className="eta__rel">{eta.vonese ? "pak vonesë" : eta.relativ}</span>
-          </p>
+          </div>
         )}
         <StatusHapat statusi={r.statusi} kohet={kohet} />
       </section>
 
-      {pyetPershtypjen && (
-        <section className="panel feedback">
-          <h2>A të kurseu ky link një telefonatë në servis?</h2>
-          <p className="muted">Një prekje. Na ndihmon të kuptojmë nëse aplikacioni vlen.</p>
-          <form action={ruajPershtypjen} className="choice">
-            <input type="hidden" name="kodi" value={r.kodi} />
-            <Dergo className="action" name="kurseu" value="po" pritja="…">Po</Dergo>
-            <Dergo className="action action--quiet" name="kurseu" value="jo" pritja="…">Jo</Dergo>
-          </form>
-        </section>
-      )}
-
-      {r.statusi !== "Marrë" && process.env.VAPID_PUBLIC_KEY && (
-        <Njoftimet kodi={r.kodi} celesi={process.env.VAPID_PUBLIC_KEY} />
-      )}
-
       {r.shtese?.vendimi === "pritje" && (
-        <section className="panel panel--notice">
+        <section className="decision" aria-label="Kosto shtesë">
+          <span className="decision__tag"><Ikona emri="kujdes" madhesia={15} />Kërkon vendimin tënd</span>
           <h2>Servisi gjeti një problem tjetër</h2>
-          <p>{r.shtese.arsyeja}</p>
-          <dl className="facts">
-            <div><dt>Shtesë</dt><dd className="price">+{r.shtese.cmimi} €</dd></div>
-            <div><dt>Gjithsej nëse e miraton</dt><dd className="price">{r.cmimi + r.shtese.cmimi} €</dd></div>
-          </dl>
+          <p className="decision__reason">{r.shtese.arsyeja}</p>
+          <div className="decision__sum">
+            <span>Shtesë <strong>+{r.shtese.cmimi} €</strong></span>
+            <small>Gjithsej {r.cmimi + r.shtese.cmimi} €</small>
+          </div>
           <form action={vendosKostoShtese}>
             <input type="hidden" name="kodi" value={r.kodi} />
             <VetemMeRrjet>
-              <div className="choice">
-                <Dergo className="action" name="vendimi" value="miratuar" pritja="Po ruhet…">Mirato</Dergo>
-                <Dergo className="action action--quiet" name="vendimi" value="refuzuar" pritja="Po ruhet…">Refuzo</Dergo>
+              <div className="btn-row">
+                <Dergo className="btn btn--gray" name="vendimi" value="refuzuar" pritja="Po ruhet…">Refuzo</Dergo>
+                <Dergo className="btn btn--primary" name="vendimi" value="miratuar" pritja="Po ruhet…">Mirato</Dergo>
               </div>
             </VetemMeRrjet>
+          </form>
+          <p className="card__sub" style={{ marginTop: 12, fontSize: "0.8125rem" }}>Nëse e refuzon, riparimi shtesë nuk bëhet dhe çmimi mbetet {r.cmimi} €.</p>
+        </section>
+      )}
+
+      {pyetPershtypjen && (
+        <section className="card feedback" aria-label="Përshtypja">
+          <h2>A të kurseu ky link një telefonatë në servis?</h2>
+          <p className="card__sub">Një prekje. Na ndihmon të kuptojmë nëse aplikacioni vlen.</p>
+          <form action={ruajPershtypjen} className="btn-row">
+            <input type="hidden" name="kodi" value={r.kodi} />
+            <Dergo className="btn btn--gray" name="kurseu" value="jo" pritja="…">Jo</Dergo>
+            <Dergo className="btn btn--primary" name="kurseu" value="po" pritja="…">Po</Dergo>
           </form>
         </section>
       )}
 
-      {r.kaFoto && (
-        <figure className="panel photo-shown">
-          {/* eslint-disable-next-line @next/next/no-img-element -- fotoja ruhet si data URL në databazë */}
-          <img src={`/r/${r.kodi}/foto`} alt={`${r.pajisja} në pranim`} loading="lazy" decoding="async" width={1024} height={768} />
-          <figcaption className="muted">Gjendja e telefonit kur u la në servis · {r.dorezuar}</figcaption>
-        </figure>
+      {!mbyllur && process.env.VAPID_PUBLIC_KEY && (
+        <Njoftimet kodi={r.kodi} celesi={process.env.VAPID_PUBLIC_KEY} />
       )}
-      <section className="panel">
-        <dl className="facts">
-          <div><dt>Dorëzuar</dt><dd>{r.dorezuar}</dd></div>
-          <div><dt>Çmimi i vlerësuar</dt><dd className="price">{r.cmimi} €</dd></div>
+
+      <section className="group" aria-label="Pagesa">
+        <div className="group__head"><h2>Pagesa</h2></div>
+        <div className="group__body">
+          <div className="row"><span className="row__main"><span className="row__title">Çmimi i vlerësuar</span></span><span className="row__value">{r.cmimi} €</span></div>
           {r.shtese && r.shtese.vendimi !== "pritje" && (
-            <div>
-              <dt>Kosto shtesë</dt>
-              <dd>{r.shtese.vendimi === "miratuar" ? `+${r.shtese.cmimi} € · e miratuar` : "e refuzuar"}</dd>
+            <div className="row">
+              <span className="row__main"><span className="row__title">Kosto shtesë</span><span className="row__sub">{r.shtese.vendimi === "miratuar" ? "e miratuar" : "e refuzuar"}</span></span>
+              <span className="row__value">{r.shtese.vendimi === "miratuar" ? `+${r.shtese.cmimi} €` : "–"}</span>
             </div>
           )}
-          <div><dt>{r.statusi === "Marrë" ? "Paguar" : "Për të paguar në servis"}</dt><dd className="price">{totali} €</dd></div>
-        </dl>
+          <div className="row row--total"><span className="row__main"><span className="row__title">{mbyllur ? "Paguar" : "Për të paguar në servis"}</span></span><span className="row__value">{totali} €</span></div>
+        </div>
+        <p className="group__foot">Dorëzuar më {r.dorezuar}. Paguhet në servis kur e merr telefonin.</p>
       </section>
 
+      {r.kaFoto && (
+        <figure className="photo-card">
+          {/* eslint-disable-next-line @next/next/no-img-element -- fotoja shërbehet nga databaza përmes rrugës /foto */}
+          <img src={`/r/${r.kodi}/foto`} alt={`${r.pajisja} në pranim`} loading="lazy" decoding="async" width={1024} height={768} />
+          <figcaption>Gjendja e telefonit kur u la në servis · {r.dorezuar}</figcaption>
+        </figure>
+      )}
+
       {servisi && (
-        <section className="panel shop">
-          <p className="label">Servisi</p>
-          <h2>{servisi.emri}</h2>
-          {(servisi.adresa || servisi.orari) && (
-            <p className="muted">{[servisi.adresa, servisi.orari].filter(Boolean).join(" · ")}</p>
-          )}
-          {telServisi && (
-            <div className="actions-row actions-row--two">
-              <a className="action action--quiet" href={`tel:${telServisi}`}>Telefono</a>
-              <a className="action action--quiet" href={`https://wa.me/${telServisi.replace("+", "")}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        <section className="group shop" aria-label="Servisi">
+          <div className="group__head"><h2>Servisi</h2></div>
+          <div className="group__body">
+            <div className="row row--icon">
+              <span className="row__icon" style={ngjyra("linear-gradient(180deg, #34c759, #1f9d45)")}><Ikona emri="celes" madhesia={16} /></span>
+              <span className="row__main">
+                <span className="row__title row__title--strong">{servisi.emri}</span>
+                {(servisi.adresa || servisi.orari) && <span className="row__sub">{[servisi.adresa, servisi.orari].filter(Boolean).join(" · ")}</span>}
+              </span>
             </div>
-          )}
+            {telServisi && (
+              <>
+                <a className="row row--link row--icon" href={`tel:${telServisi}`}>
+                  <span className="row__icon" style={ngjyra("#34c759")}><Ikona emri="telefon" madhesia={16} /></span>
+                  <span className="row__main"><span className="row__title">Telefono</span></span>
+                  <span className="row__value">{telServisi}</span>
+                </a>
+                <a className="row row--link row--icon" href={`https://wa.me/${telServisi.replace("+", "")}`} target="_blank" rel="noopener noreferrer">
+                  <span className="row__icon" style={ngjyra("#25d366")}><IkonaWhatsApp madhesia={18} /></span>
+                  <span className="row__main"><span className="row__title">Shkruaj në WhatsApp</span></span>
+                  <Ikona emri="djathtas" madhesia={18} trashesia={2.4} className="chev" />
+                </a>
+              </>
+            )}
+          </div>
         </section>
       )}
+
+      <div className="theme-pick"><p>Pamja</p><ZgjedhTemen /></div>
 
       {toast && <Toast mesazhi={toast[0]} ton={toast[1]} />}
     </main>

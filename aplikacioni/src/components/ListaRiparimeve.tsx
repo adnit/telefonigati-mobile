@@ -1,62 +1,80 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Ikona } from "@/components/Ikona";
 import { KartaRiparimi } from "@/components/KartaRiparimi";
-import type { Riparim } from "@/lib/riparimet";
+import type { Riparim, Statusi } from "@/lib/riparimet";
 
-type Filtri = "te-gjitha" | "Pranuar" | "Në riparim" | "Gati për marrje" | "pret";
-
-const FILTRAT: { id: Filtri; emri: string }[] = [
-  { id: "te-gjitha", emri: "Të gjitha" },
-  { id: "Pranuar", emri: "Pranuar" },
-  { id: "Në riparim", emri: "Në riparim" },
-  { id: "Gati për marrje", emri: "Gati" },
-  { id: "pret", emri: "Pret klientin" },
+// Radha e seksioneve: ajo që klienti po pret të marrë del e para.
+const SEKSIONET: { statusi: Statusi; emri: string }[] = [
+  { statusi: "Gati për marrje", emri: "Gati për marrje" },
+  { statusi: "Në riparim", emri: "Në riparim" },
+  { statusi: "Pranuar", emri: "Pranuar" },
 ];
 
-function perputhet(r: Riparim, f: Filtri) {
-  if (f === "te-gjitha") return true;
-  if (f === "pret") return r.shtese?.vendimi === "pritje";
-  return r.statusi === f;
-}
-
-// Kërkimi dhe filtrat punojnë në telefon, pa i pyetur serverin: lista e servisit është e vogël.
-export function ListaRiparimeve({ riparimet }: { riparimet: Riparim[] }) {
+// Kërkimi punon në telefon, pa i pyetur serverin: lista e servisit është e vogël.
+export function ListaRiparimeve({ aktive, mbyllura }: { aktive: Riparim[]; mbyllura: Riparim[] }) {
   const [kerkimi, setKerkimi] = useState("");
-  const [filtri, setFiltri] = useState<Filtri>("te-gjitha");
 
-  const pamja = useMemo(() => {
-    const q = kerkimi.trim().toLocaleLowerCase("sq");
-    return riparimet.filter((r) => perputhet(r, filtri) && (!q
-      || r.pajisja.toLocaleLowerCase("sq").includes(q)
-      || r.problemi.toLocaleLowerCase("sq").includes(q)
-      || r.id === q.replace(/^nr\.?\s*/, "")));
-  }, [riparimet, kerkimi, filtri]);
+  const q = kerkimi.trim().toLocaleLowerCase("sq");
+  const perputhet = useMemo(() => (r: Riparim) => !q
+    || r.pajisja.toLocaleLowerCase("sq").includes(q)
+    || r.problemi.toLocaleLowerCase("sq").includes(q)
+    || r.id === q.replace(/^nr\.?\s*/, ""), [q]);
+
+  const pamja = aktive.filter(perputhet);
+  const teMbyllura = mbyllura.filter(perputhet);
+  const pret = pamja.filter((r) => r.shtese?.vendimi === "pritje").length;
+
+  if (aktive.length === 0 && mbyllura.length === 0) {
+    return (
+      <div className="empty">
+        <Ikona emri="celular" madhesia={44} trashesia={1.5} />
+        <strong>Asnjë telefon në servis</strong>
+        <p>Regjistro riparimin kur klienti sjell telefonin në banak.</p>
+        <Link className="btn btn--primary" href="/servisi/i-ri"><Ikona emri="shto" />Riparim i ri</Link>
+      </div>
+    );
+  }
 
   return (
     <>
-      <div className="search">
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+      <label className="search">
+        <Ikona emri="kerko" madhesia={17} trashesia={2.2} />
         <input type="search" value={kerkimi} onChange={(e) => setKerkimi(e.target.value)}
           placeholder="Kërko pajisjen, problemin ose nr." aria-label="Kërko riparimet" enterKeyHint="search" />
-      </div>
-      <div className="chips" role="group" aria-label="Filtro sipas statusit">
-        {FILTRAT.map((f) => {
-          const n = riparimet.filter((r) => perputhet(r, f.id)).length;
-          return (
-            <button key={f.id} type="button" className="chip" aria-pressed={filtri === f.id}
-              onClick={() => setFiltri(f.id)}>
-              {f.emri}<span className="chip__count">{n}</span>
-            </button>
-          );
-        })}
-      </div>
-      {pamja.length === 0 ? (
-        <p className="empty">Asnjë riparim nuk përputhet me kërkimin.</p>
-      ) : (
-        <div className="repair-list">
-          {pamja.map((r) => <KartaRiparimi key={r.id} riparim={r} />)}
-        </div>
+      </label>
+
+      {pret > 0 && !q && (
+        <p className="group__foot" style={{ margin: "-8px 0 14px", padding: "0 4px" }}>
+          {pret === 1 ? "1 riparim pret" : `${pret} riparime presin`} vendimin e klientit për koston shtesë.
+        </p>
+      )}
+
+      {pamja.length === 0 && teMbyllura.length === 0 && (
+        <div className="empty"><Ikona emri="kerko" madhesia={36} trashesia={1.6} /><p>Asnjë riparim nuk përputhet me “{kerkimi}”.</p></div>
+      )}
+
+      {SEKSIONET.map((s) => {
+        const lista = pamja.filter((r) => r.statusi === s.statusi);
+        if (lista.length === 0) return null;
+        return (
+          <section key={s.statusi} className="group" aria-label={s.emri}>
+            <div className="group__head"><h2>{s.emri}</h2><span className="group__count">{lista.length}</span></div>
+            <div className="group__body">{lista.map((r) => <KartaRiparimi key={r.id} riparim={r} />)}</div>
+          </section>
+        );
+      })}
+
+      {teMbyllura.length > 0 && (
+        <details className="group" open={Boolean(q)}>
+          <summary className="group__head">
+            <h2>Të mbyllura së fundmi</h2>
+            <span className="group__count">{teMbyllura.length} <Ikona emri="djathtas" madhesia={14} trashesia={2.4} className="chev" /></span>
+          </summary>
+          <div className="group__body">{teMbyllura.slice(0, 15).map((r) => <KartaRiparimi key={r.id} riparim={r} />)}</div>
+        </details>
       )}
     </>
   );

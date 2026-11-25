@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getSql } from "@/lib/db";
 import { vetemPronari } from "@/lib/servisi";
-import { normalizoTelefonin } from "@/lib/rregullat";
+import { euro, normalizoTelefonin } from "@/lib/rregullat";
 
 function fusha(formData: FormData, emri: string, max: number) {
   const v = String(formData.get(emri) ?? "").trim();
@@ -54,4 +54,32 @@ export async function anuloFtesen(formData: FormData) {
   const sql = getSql();
   await sql`DELETE FROM ftesat WHERE email = ${String(formData.get("email") ?? "")}`;
   redirect("/servisi/cilesimet?m=ftesa-anuluar");
+}
+
+// Çmimorja: vetëm pronari e ndryshon. Marka dhe modeli janë opsionale.
+export async function shtoCmimin(formData: FormData) {
+  if (!(await vetemPronari())) redirect("/servisi");
+  const t = (k: string, max: number) => { const v = String(formData.get(k) ?? "").trim(); return v && v.length <= max ? v : null; };
+  const problemi = t("problemi", 60);
+  const marka = t("marka", 40);
+  const modeli = marka ? t("modeli", 80) : null;
+  const cmimi = euro(String(formData.get("cmimi") ?? ""));
+  const diteV = String(formData.get("dite") ?? "").trim();
+  const dite = diteV === "" ? null : /^\d{1,2}$/.test(diteV) && Number(diteV) <= 60 ? Number(diteV) : -1;
+  if (!problemi || cmimi === null || dite === -1) redirect("/servisi/cilesimet?m=cmimi-fushe#cmimorja");
+  const sql = getSql();
+  await sql`INSERT INTO cmimet (marka, modeli, problemi, cmimi, dite) VALUES (${marka}, ${modeli}, ${problemi}, ${cmimi}, ${dite})
+    ON CONFLICT (coalesce(marka, ''), coalesce(modeli, ''), lower(problemi)) DO UPDATE SET cmimi = EXCLUDED.cmimi, dite = EXCLUDED.dite`;
+  revalidatePath("/servisi/i-ri");
+  redirect("/servisi/cilesimet?m=cmimi#cmimorja");
+}
+
+export async function fshiCmimin(formData: FormData) {
+  if (!(await vetemPronari())) redirect("/servisi");
+  const id = String(formData.get("id") ?? "");
+  if (!/^\d+$/.test(id)) redirect("/servisi/cilesimet");
+  const sql = getSql();
+  await sql`DELETE FROM cmimet WHERE id = ${id}`;
+  revalidatePath("/servisi/i-ri");
+  redirect("/servisi/cilesimet?m=cmimi-fshire#cmimorja");
 }

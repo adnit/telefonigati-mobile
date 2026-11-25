@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Ikona } from "@/components/Ikona";
 
 const MAX_ANA = 1024;   // piksele në anën më të gjatë
 const CILESIA = 0.7;    // JPEG
@@ -18,6 +19,7 @@ async function zvogelo(file: File): Promise<string> {
   return canvas.toDataURL("image/jpeg", CILESIA);
 }
 
+// Rreshti i fotos në formularin e pranimit: "Bëj foto" hap kamerën e pasme; pamja paraprake shfaqet poshtë.
 export function FotoPranimi() {
   const [foto, setFoto] = useState("");
   const [gjendja, setGjendja] = useState<"bosh" | "duke" | "gati" | "gabim">("bosh");
@@ -35,30 +37,32 @@ export function FotoPranimi() {
       setFoto("");
       setGjendja("gabim");
     }
+    e.target.value = "";
   }
 
   return (
-    <div className="photo">
-      <span className="photo__title">Foto e telefonit (opsionale)</span>
-      <p className="muted">Fotografo vetëm pajisjen: ekranin, cepat, gërvishtjet. Jo dokumente ose fytyra.</p>
+    <>
       {/* capture hap kamerën e pasme në telefon; në kompjuter hapet zgjedhja e skedarit. */}
-      <input id="foto-input" className="visually-hidden" type="file" accept="image/*"
-        capture="environment" onChange={kurZgjidhet} />
-      <label htmlFor="foto-input" className="action action--quiet action--block">
-        {foto ? "Bëj një foto tjetër" : "Bëj foto"}
-      </label>
+      <input id="foto-input" className="visually-hidden" type="file" accept="image/*" capture="environment" onChange={kurZgjidhet} />
       <input type="hidden" name="foto" value={foto} />
-      {gjendja === "duke" && <p className="muted" role="status">Po përgatitet fotoja…</p>}
-      {gjendja === "gabim" && <p role="alert">Fotoja nuk u lexua. Provo një tjetër ose vazhdo pa foto.</p>}
       {foto && (
-        <div className="photo__preview">
-          {/* eslint-disable-next-line @next/next/no-img-element -- data URL lokale, jo imazh nga serveri */}
-          <img src={foto} alt="Pamja e telefonit në pranim" />
-          <button type="button" className="action action--quiet" onClick={() => { setFoto(""); setGjendja("bosh"); }}>
-            Hiq foton
-          </button>
+        <div className="field">
+          <div className="photo-preview">
+            {/* eslint-disable-next-line @next/next/no-img-element -- data URL lokale, jo imazh nga serveri */}
+            <img src={foto} alt="Pamja e telefonit në pranim" />
+            <button type="button" onClick={() => { setFoto(""); setGjendja("bosh"); }} aria-label="Hiq foton">
+              <Ikona emri="mbyll" madhesia={15} trashesia={2.6} />
+            </button>
+          </div>
         </div>
       )}
-    </div>
+      <label htmlFor="foto-input" className="row row--button row--icon row--accent">
+        <span className="row__icon" style={{ "--icon-bg": "#8e8e93" } as React.CSSProperties}><Ikona emri="kamera" madhesia={17} /></span>
+        <span className="row__main">
+          <span className="row__title">{gjendja === "duke" ? "Po përgatitet…" : foto ? "Bëj një foto tjetër" : "Bëj foto të telefonit"}</span>
+          {gjendja === "gabim" && <span className="row__sub" role="alert">Fotoja nuk u lexua. Provo një tjetër ose vazhdo pa foto.</span>}
+        </span>
+      </label>
+    </>
   );
 }

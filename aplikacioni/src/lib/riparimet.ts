@@ -247,3 +247,20 @@ export async function lexoFoton(kush: { id: string } | { kodi: string }): Promis
   if (!foto?.startsWith("data:image/jpeg;base64,")) return null;
   return Buffer.from(foto.slice("data:image/jpeg;base64,".length), "base64");
 }
+
+// Çmimorja e servisit, e renditur sipas problemit dhe markës.
+export async function lexoCmimet(): Promise<import("./katalogu").Cmim[]> {
+  const sql = getSql();
+  const rows = await sql`SELECT id::text, marka, modeli, problemi, cmimi, dite FROM cmimet
+    ORDER BY lower(problemi), marka NULLS LAST, modeli NULLS LAST`;
+  return rows as import("./katalogu").Cmim[];
+}
+
+// Nënshkrimi i klientit në marrje (vetëm për riparimet e mbyllura).
+export async function lexoNenshkrimin(kush: { id: string } | { kodi: string }): Promise<string | null> {
+  const sql = getSql();
+  const rows = "id" in kush
+    ? await sql`SELECT nenshkrimi FROM riparimet WHERE id = ${kush.id}`
+    : await sql`SELECT nenshkrimi FROM riparimet WHERE kodi = ${kush.kodi}`;
+  return (rows[0]?.nenshkrimi as string | null) ?? null;
+}

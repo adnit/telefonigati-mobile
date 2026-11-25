@@ -56,6 +56,30 @@ export async function regjistroRiparimin(formData: FormData) {
   redirect(`/servisi/riparimi/${rows[0].id}?m=regjistruar`);
 }
 
+// Ndryshimi i statusit, i përbashkët për faqen e riparimit dhe tabelën: rreshti i regjistrit
+// shkruhet në të njëjtën komandë, dhe klienti njoftohet vetëm kur statusi ndryshon vërtet.
+async function vendosStatusin(kush: string, id: string, statusi: Statusi, zhbej: boolean) {
+  const sql = getSql();
+  // Një riparim i mbyllur nuk rihapet nga butonat e statusit.
+  // Statusi i mëparshëm kthehet që mesazhi të ofrojë "Zhbëj".
+  const veprimi = (zhbej ? "Zhbëu statusin → " : "Statusi → ") + statusi;
+  const rows = await sql`WITH u AS (
+      UPDATE riparimet r SET statusi = ${statusi}, perditesuar = now()
+      FROM (SELECT id, statusi AS para FROM riparimet WHERE id = ${id} FOR UPDATE) v
+      WHERE r.id = v.id AND v.para <> 'Marrë' AND v.para <> ${statusi}
+      RETURNING r.id, r.kodi, r.pajisja, v.para),
+    n AS (INSERT INTO ngjarjet (riparim_id, kush, veprimi) SELECT id, ${kush}, ${veprimi} FROM u)
+    SELECT kodi, pajisja, para FROM u`;
+  const r = rows[0] as { kodi: string; pajisja: string; para: Statusi } | undefined;
+  if (r && !zhbej && statusi === "Gati për marrje") {
+    await dergoNjoftim(r.kodi, { titulli: "Telefoni yt është gati", teksti: `${r.pajisja} · Kalo në servis për ta marrë.` });
+  } else if (r && !zhbej && statusi === "Në riparim") {
+    await dergoNjoftim(r.kodi, { titulli: "Riparimi filloi", teksti: `${r.pajisja} është tani në riparim.` });
+  }
+  revalidatePath("/servisi");
+  return r;
+}
+
 export async function ndryshoStatusin(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const p = await vetemServisi();
@@ -64,30 +88,19 @@ export async function ndryshoStatusin(formData: FormData) {
   if (!STATUSET.includes(statusi)) redirect(`/servisi/riparimi/${id}?m=fushe`);
   // "Zhbëj" nga mesazhi i konfirmimit: kthen statusin pa i dërguar njoftim klientit.
   const zhbej = formData.get("zhbej") === "1";
-
-  const sql = getSql();
-  // Një riparim i mbyllur nuk rihapet nga butonat e statusit.
-  // Njoftojmë vetëm kur statusi ndryshon vërtet, jo kur shtypet i njëjti buton.
-  // Statusi i mëparshëm kthehet që mesazhi të ofrojë "Zhbëj".
-  const veprimi = (zhbej ? "Zhbëu statusin → " : "Statusi → ") + statusi;
-  const rows = await sql`WITH u AS (
-      UPDATE riparimet r SET statusi = ${statusi}, perditesuar = now()
-      FROM (SELECT id, statusi AS para FROM riparimet WHERE id = ${id} FOR UPDATE) v
-      WHERE r.id = v.id AND v.para <> 'Marrë' AND v.para <> ${statusi}
-      RETURNING r.id, r.kodi, r.pajisja, v.para),
-    n AS (INSERT INTO ngjarjet (riparim_id, kush, veprimi) SELECT id, ${p.emri}, ${veprimi} FROM u)
-    SELECT kodi, pajisja, para FROM u`;
-  const r = rows[0];
-  if (r && !zhbej && statusi === "Gati për marrje") {
-    await dergoNjoftim(r.kodi, { titulli: "Telefoni yt është gati", teksti: `${r.pajisja} · Kalo në servis për ta marrë.` });
-  } else if (r && !zhbej && statusi === "Në riparim") {
-    await dergoNjoftim(r.kodi, { titulli: "Riparimi filloi", teksti: `${r.pajisja} është tani në riparim.` });
-  }
-  revalidatePath("/servisi");
+  const r = await vendosStatusin(p.emri, id, statusi, zhbej);
   if (!r) redirect(`/servisi/riparimi/${id}`);
   redirect(zhbej
     ? `/servisi/riparimi/${id}?m=zhbere`
     : `/servisi/riparimi/${id}?m=statusi&nga=${encodeURIComponent(r.para)}`);
+}
+
+// Nga tabela (kanban): karta tërhiqet në kolonën tjetër; faqja nuk ndryshon, vetëm rifreskohet.
+export async function levizKarten(id: string, statusi: string): Promise<{ ok: boolean; para?: Statusi }> {
+  const p = await vetemServisi();
+  if (!p || !STATUSET.includes(statusi as Statusi) || !/^\d+$/.test(id)) return { ok: false };
+  const r = await vendosStatusin(p.emri, id, statusi as Statusi, false);
+  return r ? { ok: true, para: r.para } : { ok: false };
 }
 
 export async function ndryshoGatiDeri(formData: FormData) {
@@ -146,16 +159,19 @@ export async function shtoKostoShtese(formData: FormData) {
 }
 
 // Klienti e mori telefonin: mbyllet vetëm kur është gati dhe kostoja shtesë nuk pret vendim.
+// Nënshkrimi i klientit (PNG nga ekrani) ruhet bashkë me mbylljen, kur jepet.
 export async function mbyllRiparimin(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const p = await vetemServisi();
   if (!p) redirect(`/servisi/riparimi/${id}?m=ndaluar`);
+  const nV = String(formData.get("nenshkrimi") ?? "");
+  const nenshkrimi = nV.startsWith("data:image/png;base64,") && nV.length <= 120_000 ? nV : null;
   const sql = getSql();
-  const rows = await sql`WITH u AS (UPDATE riparimet SET statusi = 'Marrë', marre = now(), perditesuar = now()
+  const rows = await sql`WITH u AS (UPDATE riparimet SET statusi = 'Marrë', marre = now(), perditesuar = now(), nenshkrimi = ${nenshkrimi}
       WHERE id = ${id} AND statusi = 'Gati për marrje' AND (vendimi IS NULL OR vendimi <> 'pritje')
       RETURNING id, cmimi + CASE WHEN vendimi = 'miratuar' THEN shtese_cmimi ELSE 0 END AS paguar),
     n AS (INSERT INTO ngjarjet (riparim_id, kush, veprimi)
-      SELECT id, ${p.emri}, 'Mbylli riparimin · paguar ' || paguar || ' €' FROM u)
+      SELECT id, ${p.emri}, 'Mbylli riparimin · paguar ' || paguar || ' €' || ${nenshkrimi ? " · me nënshkrim" : ""} FROM u)
     SELECT id FROM u`;
   revalidatePath("/servisi");
   redirect(`/servisi/riparimi/${id}?m=${rows.length === 1 ? "mbyllur" : "nuk-mbyllet"}`);

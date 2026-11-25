@@ -48,13 +48,26 @@ test("pranimi → statusi → kosto shtesë → miratimi → mbyllja → përsht
   await k.getByRole("button", { name: "Mirato" }).click();
   await expect(k.locator(".toast")).toContainText("Faleminderit");
 
-  // Gati dhe mbyllja me shumën e plotë
+  // Hapi tjetër me një prekje: Fillo → Gati, pastaj mbyllja me shumën e plotë
   await s.reload();
-  await s.getByRole("button", { name: "Ndrysho statusin" }).click();
-  await s.locator("dialog[open] .option", { hasText: "Gati për marrje" }).click();
+  await s.getByRole("button", { name: "Fillo riparimin" }).click();
   await expect(s.locator(".toast")).toContainText("Statusi u ruajt");
+  await s.getByRole("button", { name: "Shëno gati për marrje" }).click();
+  await expect(s.locator(".status-hero__value")).toHaveText("Gati për marrje");
+  // Marrja: klienti nënshkruan në ekran; pa nënshkrim butoni nuk punon
   await s.getByRole("button", { name: "Klienti e mori · 105 €" }).click();
+  const konfirmo = s.locator("dialog[open]").getByRole("button", { name: /Konfirmo marrjen/ });
+  await expect(konfirmo).toBeDisabled();
+  // Fleta duhet të ketë mbaruar së ngjituri, përndryshe vija bie jashtë fushës.
+  await expect(s.locator("dialog[open]")).toHaveCSS("animation-name", "none");
+  const pad = (await s.locator("dialog[open] canvas").boundingBox())!;
+  await s.mouse.move(pad.x + 30, pad.y + 100); await s.mouse.down();
+  for (let i = 1; i <= 20; i++) await s.mouse.move(pad.x + 30 + i * 12, pad.y + 100 - Math.sin(i / 2) * 30);
+  await s.mouse.up();
+  await konfirmo.click();
   await expect(s.locator(".panel--closed")).toContainText("Paguar");
+  await expect(s.locator(".signature-shown img")).toBeVisible();
+  expect((await sql`SELECT nenshkrimi FROM riparimet WHERE id = ${id}`)[0].nenshkrimi).toMatch(/^data:image\/png;base64,/);
 
   // Klienti përgjigjet një herë; përgjigjja e dytë nuk ruhet
   await k.goto(`/r/${kodi}`);
@@ -66,7 +79,7 @@ test("pranimi → statusi → kosto shtesë → miratimi → mbyllja → përsht
   // Regjistri tregon kush bëri çfarë
   await s.goto(`/servisi/riparimi/${id}`);
   const aktiviteti = s.locator(".activity");
-  for (const v of ["Regjistroi riparimin", "Zhbëu statusin", "Kosto shtesë +15 €", "Miratoi koston shtesë", "Mbylli riparimin · paguar 105 €", "Linku i kurseu një telefonatë"]) {
+  for (const v of ["Regjistroi riparimin", "Zhbëu statusin", "Kosto shtesë +15 €", "Miratoi koston shtesë", "Mbylli riparimin · paguar 105 € · me nënshkrim", "Linku i kurseu një telefonatë"]) {
     await expect(aktiviteti).toContainText(v);
   }
 });

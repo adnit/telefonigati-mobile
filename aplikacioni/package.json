@@ -10,7 +10,8 @@
     "test": "playwright test tests/rregullat.spec.ts",
     "test:e2e": "playwright test tests/e2e",
     "demo": "node scripts/demo.mjs",
-    "demo:pastro": "node scripts/demo.mjs --pastro"
+    "demo:pastro": "node scripts/demo.mjs --pastro",
+    "db:migrate": "node scripts/migrate.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",

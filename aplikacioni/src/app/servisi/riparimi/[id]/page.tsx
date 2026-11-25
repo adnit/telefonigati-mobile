@@ -1,15 +1,19 @@
 import Link from "next/link";
 import { headers } from "next/headers";
+import { Ikona, IkonaWhatsApp } from "@/components/Ikona";
+import { Nav, PageTitle } from "@/components/Nav";
 import { notFound, redirect } from "next/navigation";
+import { DataGati } from "@/components/DataGati";
 import { Dergo } from "@/components/Dergo";
+import { Nenshkrimi } from "@/components/Nenshkrimi";
 import { LinkuKlientit } from "@/components/LinkuKlientit";
 import { Live } from "@/components/Live";
 import { Sheet } from "@/components/Sheet";
-import { StatusHapat, StatusPill } from "@/components/Statusi";
+import { HAPI_TJETER, IKONA_E_STATUSIT, StatusHapat, StatusKryesor, TONI } from "@/components/Statusi";
 import { Toast } from "@/components/Toast";
 import { pershkrimiIDates } from "@/lib/data";
 import {
-  STATUSET, gjejRiparimin, lexoHistorikun, lexoNgjarjet, lexoShenimet, totali, versioniSipasNumrit,
+  STATUSET, type Statusi, gjejRiparimin, lexoHistorikun, lexoNenshkrimin, lexoNgjarjet, lexoShenimet, totali, versioniSipasNumrit,
 } from "@/lib/riparimet";
 import { vetemServisi } from "@/lib/servisi";
 import {
@@ -35,7 +39,9 @@ const mesazhet: Record<string, [string, "ok" | "gabim"]> = {
   "shenim-bosh": ["Shënimi është bosh.", "gabim"],
 };
 
-const vendimet = { pritje: "Pret klientin", miratuar: "E miratuar", refuzuar: "E refuzuar" };
+const vendimet = { pritje: "pret klientin", miratuar: "e miratuar", refuzuar: "e refuzuar" };
+
+const ngjyra = (c: string) => ({ "--icon-bg": c }) as React.CSSProperties;
 
 export default async function RiparimiServisit({ params, searchParams }: {
   params: Promise<{ id: string }>;
@@ -45,8 +51,8 @@ export default async function RiparimiServisit({ params, searchParams }: {
   const { id } = await params;
   const { m, nga } = await searchParams;
   // Të gjitha leximet sipas numrit, njëherësh.
-  const [r, versioni, kohet, shenimet, ngjarjet] = await Promise.all([
-    gjejRiparimin(id), versioniSipasNumrit(id), lexoHistorikun(id), lexoShenimet(id), lexoNgjarjet(id),
+  const [r, versioni, kohet, shenimet, ngjarjet, nenshkrimi] = await Promise.all([
+    gjejRiparimin(id), versioniSipasNumrit(id), lexoHistorikun(id), lexoShenimet(id), lexoNgjarjet(id), lexoNenshkrimin({ id }),
   ]);
   if (!r) notFound();
 
@@ -59,164 +65,208 @@ export default async function RiparimiServisit({ params, searchParams }: {
   const eta = r.gatiDeri ? pershkrimiIDates(r.gatiDeri) : null;
   const toast = m ? mesazhet[m] : undefined;
 
+  const tjetri = HAPI_TJETER[r.statusi];
+  const presKlientin = r.shtese?.vendimi === "pritje";
+
   return (
     <main>
       {versioni && <Live url={`/api/r/${r.kodi}/versioni`} versioni={versioni} />}
-      <Link className="back" href="/servisi">← Riparimet</Link>
-      <header className="page-head">
-        <div className="page-head__row">
-          <p className="label">Nr. {r.id} · {r.dorezuar}</p>
-          <StatusPill statusi={r.statusi} />
-        </div>
-        <h1>{r.pajisja}</h1>
-        <p className="muted">{r.problemi}</p>
-      </header>
+      <Nav prapa={{ href: "/servisi", emri: "Riparimet" }} titulli={`Nr. ${r.id}`}
+        djathtas={<LinkuKlientit shtegu={`/r/${r.kodi}`} si="ikone" />} />
+      <PageTitle sipër={`Nr. ${r.id} · dorëzuar ${r.dorezuar}`} titulli={r.pajisja} nentitulli={r.problemi} />
 
       {mbyllur ? (
-        <section className="panel panel--closed">
-          <p className="label">Mbyllur</p>
-          <h2>Klienti e mori telefonin më {r.marre}</h2>
-          <dl className="facts">
-            <div><dt>Paguar</dt><dd className="price">{totali(r)} €</dd></div>
-          </dl>
+        <section className="status-card panel--closed" aria-label="Statusi">
+          <StatusKryesor statusi="Marrë" etiketa="Mbyllur" vlera="Klienti e mori" koha={`më ${r.marre} · Paguar ${totali(r)} €`} />
+          {nenshkrimi && (
+            <>
+              <p className="signature-label">Nënshkrimi i klientit</p>
+              {/* eslint-disable-next-line @next/next/no-img-element -- PNG i vogël nga databaza */}
+              <div className="signature-shown"><img src={nenshkrimi} alt="Nënshkrimi i klientit në marrje" /></div>
+            </>
+          )}
         </section>
       ) : (
-        <section className="panel">
+        <section className="status-card" aria-label="Statusi">
+          <StatusKryesor statusi={r.statusi} koha={eta ? <>Gati deri {eta.data} · <span style={{ color: eta.vonese ? "var(--danger)" : undefined }}>{eta.relativ}</span></> : "Pa datë të pritur"} />
           <StatusHapat statusi={r.statusi} kohet={kohet} />
-          <div className="actions-row">
-            <Sheet titulli="Ndrysho statusin" butoni="Ndrysho statusin" klasaButonit="action action--block">
-              <form action={ndryshoStatusin} className="option-list">
+          <div className="status-actions">
+            {tjetri && (
+              <form action={ndryshoStatusin}>
                 <input type="hidden" name="id" value={r.id} />
-                {STATUSET.map((s, i) => (
-                  <Dergo key={s} className="option" name="statusi" value={s} pritja={s}
-                    disabled={s === r.statusi} shtypur={s === r.statusi}>
-                    <span className="option__num">{i + 1}</span>
-                    <span className="option__text">{s}</span>
-                    {s === r.statusi && <span className="option__now">tani</span>}
-                  </Dergo>
-                ))}
-              </form>
-              <p className="hint">Klienti e sheh menjëherë dhe merr njoftim kur riparimi fillon ose del gati.</p>
-            </Sheet>
-          </div>
-          {r.statusi === "Gati për marrje" && (
-            r.shtese?.vendimi === "pritje" ? (
-              <p className="muted close-note">Mbyllja pret vendimin e klientit për koston shtesë.</p>
-            ) : (
-              <form action={mbyllRiparimin} className="close-form">
-                <input type="hidden" name="id" value={r.id} />
-                <Dergo className="action action--success action--block" pritja="Po mbyllet…">
-                  Klienti e mori · {totali(r)} €
+                <Dergo name="statusi" value={tjetri.statusi} pritja="Po ruhet…">
+                  {tjetri.statusi === "Gati për marrje" ? <Ikona emri="rregull" trashesia={2.6} /> : <Ikona emri="celes" />}
+                  {tjetri.emri}
                 </Dergo>
               </form>
-            )
-          )}
+            )}
+            {r.statusi === "Gati për marrje" && (
+              presKlientin ? (
+                <p className="status-note close-note">Mbyllja pret vendimin e klientit për koston shtesë.</p>
+              ) : (
+                <Sheet titulli="Marrja e telefonit" klasaButonit="btn btn--success btn--block" butoni={<><Ikona emri="qese" />Klienti e mori · {totali(r)} €</>}>
+                  <form action={mbyllRiparimin}>
+                    <input type="hidden" name="id" value={r.id} />
+                    <div className="group">
+                      <div className="group__body">
+                        <div className="row"><span className="row__main"><span className="row__title">{r.pajisja}</span><span className="row__sub">{r.problemi}</span></span></div>
+                        <div className="row row--total"><span className="row__main"><span className="row__title">Për të paguar</span></span><span className="row__value">{totali(r)} €</span></div>
+                      </div>
+                    </div>
+                    <Nenshkrimi shuma={totali(r)} />
+                    <p className="group__foot" style={{ textAlign: "center" }}>Klienti konfirmon që e mori telefonin. Nënshkrimi ruhet me riparimin.</p>
+                  </form>
+                </Sheet>
+              )
+            )}
+            <Sheet titulli="Ndrysho statusin" butoni="Ndrysho statusin" klasaButonit="btn btn--plain">
+              <form action={ndryshoStatusin} className="group">
+                <input type="hidden" name="id" value={r.id} />
+                <div className="group__body option-list">
+                  {STATUSET.map((s) => (
+                    <Dergo key={s} className="option" name="statusi" value={s} pritja={s}
+                      disabled={s === r.statusi} shtypur={s === r.statusi}>
+                      <StatusIkone statusi={s} />
+                      <span className="option__text">{s}</span>
+                      {s === r.statusi && <span className="option__now"><Ikona emri="rregull" trashesia={2.6} /></span>}
+                    </Dergo>
+                  ))}
+                </div>
+                <p className="group__foot">Klienti e sheh menjëherë dhe merr njoftim kur riparimi fillon ose del gati.</p>
+              </form>
+            </Sheet>
+          </div>
         </section>
       )}
 
-      <section className="panel">
-        <dl className="facts">
-          <div><dt>Çmimi i vlerësuar</dt><dd className="price">{r.cmimi} €</dd></div>
-          {r.shtese && (
-            <div><dt>Kosto shtesë · {vendimet[r.shtese.vendimi]}</dt><dd className="price">+{r.shtese.cmimi} €</dd></div>
+      {r.shtese && (
+        <section className={`decision${presKlientin ? "" : " decision--done"}`} aria-label="Kosto shtesë">
+          <span className="decision__tag"><Ikona emri={presKlientin ? "ore" : "rregull"} madhesia={15} />Kosto shtesë · {vendimet[r.shtese.vendimi]}</span>
+          <h2>+{r.shtese.cmimi} €</h2>
+          <p className="decision__reason">{r.shtese.arsyeja}</p>
+        </section>
+      )}
+
+      <section className="group" aria-label="Klienti">
+        <div className="group__head"><h2>Klienti</h2></div>
+        <div className="group__body">
+          <a className="row row--link row--icon" href={whatsapp} target="_blank" rel="noopener noreferrer">
+            <span className="row__icon" style={ngjyra("#25d366")}><IkonaWhatsApp madhesia={18} /></span>
+            <span className="row__main">
+              <span className="row__title">Dërgo linkun në WhatsApp</span>
+              {!r.telefoni && <span className="row__sub">Zgjidh kontaktin në WhatsApp</span>}
+            </span>
+            <Ikona emri="djathtas" madhesia={18} trashesia={2.4} className="chev" />
+          </a>
+          <LinkuKlientit shtegu={`/r/${r.kodi}`} />
+          <Link className="row row--link row--icon" href={`/servisi/riparimi/${r.id}/fleta`}>
+            <span className="row__icon" style={ngjyra("#5856d6")}><Ikona emri="qr" madhesia={17} /></span>
+            <span className="row__main"><span className="row__title">Fleta me QR</span></span>
+            <Ikona emri="djathtas" madhesia={18} trashesia={2.4} className="chev" />
+          </Link>
+          {r.telefoni && (
+            <a className="row row--link row--icon" href={`tel:${r.telefoni}`}>
+              <span className="row__icon" style={ngjyra("#34c759")}><Ikona emri="telefon" madhesia={16} /></span>
+              <span className="row__main"><span className="row__title">Telefono klientin</span></span>
+              <span className="row__value">{r.telefoni}</span>
+            </a>
           )}
-          <div>
-            <dt>Gati deri më</dt>
-            <dd className={eta?.vonese ? "late" : undefined}>{eta ? `${eta.data} · ${eta.relativ}` : "pa datë"}</dd>
-          </div>
-          {r.imei && <div><dt>IMEI</dt><dd className="mono">{r.imei}</dd></div>}
-          {r.telefoni && <div><dt>Telefoni i klientit</dt><dd><a href={`tel:${r.telefoni}`}>{r.telefoni}</a></dd></div>}
-        </dl>
-        {!mbyllur && (
-          <div className="actions-row actions-row--two">
-            <Sheet titulli="Data e pritur" butoni={r.gatiDeri ? "Ndrysho datën" : "Cakto datën"}>
-              <form action={ndryshoGatiDeri} className="form">
+        </div>
+        {mbyllur && <p className="group__foot">Linku i klientit mbyllet 30 ditë pas marrjes.</p>}
+      </section>
+
+      <section className="group facts" aria-label="Detajet">
+        <div className="group__head"><h2>Detajet</h2></div>
+        <div className="group__body">
+          <div className="row"><span className="row__main"><span className="row__title">Çmimi i vlerësuar</span></span><span className="row__value">{r.cmimi} €</span></div>
+          {r.shtese ? (
+            <div className="row"><span className="row__main"><span className="row__title">Kosto shtesë</span><span className="row__sub">{vendimet[r.shtese.vendimi]}</span></span><span className="row__value">+{r.shtese.cmimi} €</span></div>
+          ) : !mbyllur && (
+            <Sheet titulli="Kosto shtesë" klasaButonit="row row--button row--accent" butoni={
+              <><span className="row__main"><span className="row__title">Kosto shtesë</span></span><Ikona emri="shto" madhesia={20} /></>
+            }>
+              <form action={shtoKostoShtese}>
                 <input type="hidden" name="id" value={r.id} />
-                <label htmlFor="gati_deri">Gati deri më</label>
-                <input id="gati_deri" name="gati_deri" type="date" defaultValue={r.gatiDeri ?? ""} />
-                <p className="hint">Lëre bosh për ta hequr. Klienti e sheh te linku i vet.</p>
+                <div className="group">
+                  <div className="group__body">
+                    <div className="field">
+                      <label htmlFor="arsyeja">Arsyeja</label>
+                      <input id="arsyeja" name="arsyeja" maxLength={200} required placeholder="p.sh. Porta e karikimit është e dëmtuar" />
+                    </div>
+                    <div className="field">
+                      <label htmlFor="cmimi">Shuma shtesë</label>
+                      <span className="field__affix"><input id="cmimi" name="cmimi" inputMode="numeric" pattern="\d{1,4}" maxLength={4} required placeholder="15" /><span>€</span></span>
+                    </div>
+                  </div>
+                  <p className="group__foot">Klienti e miraton ose e refuzon nga telefoni, pa telefonatë.</p>
+                </div>
+                <Dergo pritja="Po dërgohet…">Dërgo koston klientit</Dergo>
+              </form>
+            </Sheet>
+          )}
+          {mbyllur ? (
+            <div className="row"><span className="row__main"><span className="row__title">Paguar</span></span><span className="row__value row__value--strong">{totali(r)} €</span></div>
+          ) : (
+            <Sheet titulli="Data e pritur" klasaButonit="row row--button" butoni={
+              <><span className="row__main"><span className="row__title">Gati deri më</span></span>
+                <span className={`row__value${eta?.vonese ? " row__value--late" : ""}`}>{eta ? `${eta.data}` : "Cakto"}</span>
+                <Ikona emri="djathtas" madhesia={18} trashesia={2.4} className="chev" /></>
+            }>
+              <form action={ndryshoGatiDeri}>
+                <input type="hidden" name="id" value={r.id} />
+                <div className="group">
+                  <div className="group__body"><DataGati fillestare={r.gatiDeri ?? ""} /></div>
+                  <p className="group__foot">Lëre bosh për ta hequr. Klienti e sheh te linku i vet.</p>
+                </div>
                 <Dergo>Ruaj datën</Dergo>
               </form>
             </Sheet>
-            {!r.shtese && (
-              <Sheet titulli="Kosto shtesë" butoni="Kosto shtesë">
-                <form action={shtoKostoShtese} className="form">
-                  <p className="muted">Klienti e miraton ose e refuzon nga telefoni, pa telefonatë.</p>
-                  <input type="hidden" name="id" value={r.id} />
-                  <label htmlFor="arsyeja">Arsyeja</label>
-                  <input id="arsyeja" name="arsyeja" maxLength={200} required placeholder="p.sh. Porta e karikimit është e dëmtuar" />
-                  <label htmlFor="cmimi">Shuma shtesë (€)</label>
-                  <input id="cmimi" name="cmimi" inputMode="numeric" pattern="\d{1,4}" maxLength={4} required placeholder="15" />
-                  <Dergo pritja="Po dërgohet…">Dërgo koston klientit</Dergo>
-                </form>
-              </Sheet>
-            )}
-          </div>
-        )}
-      </section>
-
-      {r.shtese && (
-        <section className="panel panel--notice">
-          <h2>Kosto shtesë · {vendimet[r.shtese.vendimi]}</h2>
-          <p>{r.shtese.arsyeja}</p>
-        </section>
-      )}
-
-      {r.kaFoto && (
-        <figure className="panel photo-shown">
-          {/* eslint-disable-next-line @next/next/no-img-element -- fotoja ruhet si data URL në databazë */}
-          <img src={`/servisi/riparimi/${r.id}/foto`} alt={`${r.pajisja} në pranim`} loading="lazy" decoding="async" width={1024} height={768} />
-          <figcaption className="muted">Gjendja e telefonit kur u la në servis · {r.dorezuar}</figcaption>
-        </figure>
-      )}
-
-      <section className="panel">
-        <h2>Klienti</h2>
-        {mbyllur && <p className="muted">Linku mbyllet 30 ditë pas marrjes.</p>}
-        <a className="action action--whatsapp action--block" href={whatsapp} target="_blank" rel="noopener noreferrer">
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z"/></svg>
-          {r.telefoni ? "Dërgo në WhatsApp" : "Dërgo në WhatsApp (zgjidh kontaktin)"}
-        </a>
-        <div className="actions-row actions-row--two">
-          <Link className="action action--quiet" href={`/servisi/riparimi/${r.id}/fleta`}>Fleta me QR</Link>
-          <LinkuKlientit shtegu={`/r/${r.kodi}`} kompakt />
+          )}
+          {r.imei && <div className="row"><span className="row__main"><span className="row__title">IMEI</span></span><span className="row__value mono">{r.imei}</span></div>}
         </div>
       </section>
 
-      <section className="panel">
-        <h2>Shënime të brendshme</h2>
-        <p className="muted">I sheh vetëm stafi.</p>
-        <form action={shtoShenim} className="note-form">
-          <input type="hidden" name="id" value={r.id} />
-          <input name="teksti" maxLength={500} required placeholder="p.sh. Porositëm ekranin, vjen të enjten"
-            aria-label="Shënim i ri" autoComplete="off" />
-          <Dergo className="action" pritja="…">Shto</Dergo>
-        </form>
-        {shenimet.length > 0 && (
-          <ol className="notes">
-            {shenimet.map((s) => (
-              <li key={s.id}>
-                <p>{s.teksti}</p>
-                <span className="notes__meta">{s.autori} · {s.koha}</span>
-              </li>
-            ))}
-          </ol>
-        )}
+      {r.kaFoto && (
+        <figure className="photo-card">
+          {/* eslint-disable-next-line @next/next/no-img-element -- fotoja shërbehet nga databaza përmes rrugës /foto */}
+          <img src={`/servisi/riparimi/${r.id}/foto`} alt={`${r.pajisja} në pranim`} loading="lazy" decoding="async" width={1024} height={768} />
+          <figcaption>Gjendja kur u la në servis · {r.dorezuar}</figcaption>
+        </figure>
+      )}
+
+      <section className="group" aria-label="Shënime të brendshme">
+        <div className="group__head"><h2>Shënime të brendshme</h2></div>
+        <div className="group__body">
+          <form action={shtoShenim} className="inline-form">
+            <input type="hidden" name="id" value={r.id} />
+            <input className="input" name="teksti" maxLength={500} required placeholder="p.sh. Porositëm ekranin, vjen të enjten"
+              aria-label="Shënim i ri" autoComplete="off" enterKeyHint="send" />
+            <Dergo className="btn btn--tinted btn--small" pritja="…">Shto</Dergo>
+          </form>
+          {shenimet.map((s) => (
+            <div key={s.id} className="row note">
+              <span className="row__main"><p>{s.teksti}</p><span className="row__meta">{s.autori} · {s.koha}</span></span>
+            </div>
+          ))}
+        </div>
+        <p className="group__foot">I sheh vetëm stafi, jo klienti.</p>
       </section>
 
       {ngjarjet.length > 0 && (
-        <section className="panel">
-          <h2>Aktiviteti</h2>
-          <p className="muted">Kush ndryshoi çfarë. Nuk fshihet dhe nuk ndryshohet.</p>
-          <ol className="activity">
-            {ngjarjet.map((n, i) => (
-              <li key={i}>
-                <span className="activity__dot" aria-hidden="true" />
-                <span className="activity__what">{n.veprimi}</span>
-                <span className="activity__meta">{n.kush} · {n.koha}</span>
-              </li>
-            ))}
-          </ol>
+        <section className="group" aria-label="Aktiviteti">
+          <div className="group__head"><h2>Aktiviteti</h2></div>
+          <div className="group__body">
+            <ol className="timeline activity">
+              {ngjarjet.map((n, i) => (
+                <li key={i}>
+                  <span className="timeline__dot" aria-hidden="true" />
+                  <span className="timeline__what">{n.veprimi}</span>
+                  <span className="timeline__meta">{n.kush} · {n.koha}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <p className="group__foot">Regjistri nuk fshihet dhe nuk ndryshohet.</p>
         </section>
       )}
 
@@ -233,5 +283,13 @@ export default async function RiparimiServisit({ params, searchParams }: {
         </Toast>
       )}
     </main>
+  );
+}
+
+function StatusIkone({ statusi }: { statusi: Statusi }) {
+  return (
+    <span className={`row__icon tone--${TONI[statusi]}`} style={ngjyra("var(--tone)")}>
+      <Ikona emri={IKONA_E_STATUSIT[statusi]} madhesia={17} />
+    </span>
   );
 }

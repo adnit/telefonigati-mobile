@@ -1,10 +1,11 @@
 import Link from "next/link";
 import Hyrja from "@/components/Hyrja";
-import { Marka } from "@/components/Marka";
-import { KartaRiparimi } from "@/components/KartaRiparimi";
+import { Ikona } from "@/components/Ikona";
 import { Live } from "@/components/Live";
+import { Nav, PageTitle } from "@/components/Nav";
 import { Toast } from "@/components/Toast";
 import { ListaRiparimeve } from "@/components/ListaRiparimeve";
+import { PamjaListes } from "@/components/PamjaListes";
 import { lexoRiparimet, versioniIListes, type Riparim } from "@/lib/riparimet";
 import { eshteStaf, profiliIm } from "@/lib/servisi";
 
@@ -27,9 +28,12 @@ export default async function Servisi({ searchParams }: {
   } catch {
     return (
       <main>
-        <h1>Servisi</h1>
-        <p role="alert">Nuk u lidhëm me databazën. Provo përsëri.</p>
-        <Link className="action" href="/servisi">Provo përsëri</Link>
+        <Nav />
+        <div className="card card--center" style={{ marginTop: 40 }}>
+          <h1 style={{ fontSize: "1.375rem" }}>Pa lidhje me databazën</h1>
+          <p className="card__sub" role="alert">Provo përsëri pas pak.</p>
+          <Link className="btn btn--primary" href="/servisi">Provo përsëri</Link>
+        </div>
       </main>
     );
   }
@@ -37,14 +41,14 @@ export default async function Servisi({ searchParams }: {
   if (!p) {
     return (
       <main>
-        <Marka />
-        <header className="hero">
-          <p className="label">Për stafin</p>
-          <h1 className="display">Hyrja për servisin</h1>
-          <p className="lead">Regjistro riparimet në banak, ndrysho statusin dhe dërgoja klientit koston shtesë.</p>
-        </header>
+        <section className="hero" style={{ paddingTop: "calc(56px + env(safe-area-inset-top, 0px))" }}>
+          <span className="hero__icon"><Ikona emri="celes" madhesia={36} trashesia={2} /></span>
+          <h1>Hyrja për servisin</h1>
+          <p>Regjistro riparimet në banak, ndrysho statusin dhe dërgoja klientit koston shtesë.</p>
+        </section>
         <Hyrja brenda={false} />
-        <p className="footer-link"><Link href="/">← Je klient? Hape linkun e riparimit</Link></p>
+        <p className="group__foot" style={{ textAlign: "center", marginTop: 10 }}>Stafi hyn me llogarinë Google që ka ftuar pronari.</p>
+        <Link className="footer-link" href="/">Je klient? Hape linkun e riparimit</Link>
       </main>
     );
   }
@@ -52,46 +56,34 @@ export default async function Servisi({ searchParams }: {
   if (!eshteStaf(p)) {
     return (
       <main>
-        <Marka />
-        <header className="hero">
+        <section className="hero" style={{ paddingTop: "calc(56px + env(safe-area-inset-top, 0px))" }}>
+          <span className="avatar avatar--lg" aria-hidden="true">{[...p.emri][0]?.toUpperCase()}</span>
           <h1>Llogaria nuk është ende e stafit</h1>
-          <p className="lead">Përshëndetje, {p.emri}.</p>
-        </header>
-        <p className="muted">Pronari i servisit duhet ta aktivizojë llogarinë{p.email ? <> për <code>{p.email}</code></> : null}.</p>
-        <Hyrja brenda />
+          <p>Përshëndetje, {p.emri}. Pronari i servisit duhet ta aktivizojë llogarinë{p.email ? <> për <strong>{p.email}</strong></> : null}.</p>
+        </section>
+        <div className="group"><div className="group__body"><Hyrja brenda /></div></div>
       </main>
     );
   }
 
   const aktive = riparimet.filter((r) => r.statusi !== "Marrë");
   const mbyllura = riparimet.filter((r) => r.statusi === "Marrë");
+  const gati = aktive.filter((r) => r.statusi === "Gati për marrje").length;
 
   return (
     <main>
       <Live url="/api/servisi/versioni" versioni={versioni} />
-      <div className="title-row">
-        <Marka href="/servisi" />
-        <Hyrja brenda />
-      </div>
-      <header className="page-head">
-        <h1>Riparimet</h1>
-        <p className="muted">{aktive.length === 1 ? "1 telefon" : `${aktive.length} telefona`} në servis</p>
-      </header>
-      <Link className="action action--block" href="/servisi/i-ri">+ Regjistro riparim</Link>
-      {aktive.length === 0 ? (
-        <p className="empty">Asnjë telefon në servis. Regjistro riparimin kur klienti sjell telefonin.</p>
-      ) : (
-        <ListaRiparimeve riparimet={aktive} />
-      )}
+      <Nav titulli="Riparimet" djathtas={
+        <Link href="/servisi/i-ri" className="nav__icon nav__icon--filled" aria-label="Riparim i ri">
+          <Ikona emri="shto" madhesia={20} trashesia={2.6} />
+        </Link>
+      } />
+      <PageTitle titulli="Riparimet" nentitulli={
+        <>{aktive.length === 1 ? "1 telefon" : `${aktive.length} telefona`} në servis{gati > 0 ? ` · ${gati} gati për marrje` : ""}</>
+      } />
+      {(aktive.length > 0 || mbyllura.length > 0) && <PamjaListes aktive="lista" />}
+      <ListaRiparimeve aktive={aktive} mbyllura={mbyllura} />
       {m && mesazhet[m] && <Toast mesazhi={mesazhet[m]} ton="gabim" />}
-      {mbyllura.length > 0 && (
-        <section className="closed-list">
-          <h2 className="label">Të mbyllura së fundmi</h2>
-          <div className="repair-list repair-list--closed">
-            {mbyllura.slice(0, 10).map((r) => <KartaRiparimi key={r.id} riparim={r} />)}
-          </div>
-        </section>
-      )}
     </main>
   );
 }

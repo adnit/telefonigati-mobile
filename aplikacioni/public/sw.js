@@ -1,6 +1,6 @@
 // TelefoniGati: ruan vetëm faqen e riparimit të klientit (/r/…), skedarët statikë dhe faqen offline.
 // Paneli i servisit, hyrja dhe veprimet nuk ruhen kurrë.
-const CACHE = "telefonigati-v2";
+const CACHE = "telefonigati-v3";
 const SHELL = ["/offline.html", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {

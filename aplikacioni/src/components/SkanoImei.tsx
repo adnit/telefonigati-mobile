@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Ikona } from "@/components/Ikona";
 import { imeiVlefshem } from "@/lib/rregullat";
 
 // BarcodeDetector nuk është ende në tipet e TypeScript-it.
@@ -60,19 +61,19 @@ export function SkanoImei() {
   const gjendja = !shifrat ? "" : shifrat.length < 15 ? `${shifrat.length}/15 shifra` : imeiVlefshem(shifrat) ? "IMEI i vlefshëm ✓" : "Shifra e kontrollit nuk përputhet";
 
   return (
-    <div className="imei">
-      <label htmlFor="imei">IMEI (opsional)</label>
-      <div className="imei__row">
-        <input id="imei" name="imei" inputMode="numeric" autoComplete="off" maxLength={17}
-          value={vlera} onChange={(e) => setVlera(e.target.value)} placeholder="15 shifra" className="mono" />
+    <div className="field">
+      <label htmlFor="imei">IMEI</label>
+      <div className="imei-row">
+        <input id="imei" name="imei" className="input" inputMode="numeric" autoComplete="off" maxLength={17}
+          value={vlera} onChange={(e) => setVlera(e.target.value)} placeholder="15 shifra (opsionale)" />
         {mbeshtetet && (
-          <button type="button" className="action action--quiet" onClick={() => { setMesazhi(""); setKamera(true); }}>
-            Skano
+          <button type="button" className="btn btn--tinted btn--small" onClick={() => { setMesazhi(""); setKamera(true); }}>
+            <Ikona emri="barkod" madhesia={16} />Skano
           </button>
         )}
       </div>
-      <p className={`hint${gjendja.includes("✓") ? " hint--ok" : gjendja.includes("nuk") ? " hint--bad" : ""}`} aria-live="polite">
-        {mesazhi || gjendja || "Në telefonin e klientit: *#06# e shfaq IMEI-n; ose skano barkodin në kuti."}
+      <p className={`field__hint${gjendja.includes("✓") ? " field__hint--ok" : gjendja.includes("nuk") ? " field__hint--bad" : ""}`} aria-live="polite">
+        {mesazhi || gjendja || "*#06# në telefonin e klientit e shfaq IMEI-n; ose skano barkodin në kuti."}
       </p>
       {kamera && (
         <div className="scanner" role="dialog" aria-label="Skano IMEI-n">
@@ -81,7 +82,7 @@ export function SkanoImei() {
             <span className="scanner__frame" aria-hidden="true" />
           </div>
           <p>Drejtoje kamerën te barkodi IMEI në kuti ose në etiketë.</p>
-          <button type="button" className="action action--quiet" onClick={() => setKamera(false)}>Mbyll</button>
+          <button type="button" className="btn btn--small" onClick={() => setKamera(false)}>Mbyll</button>
         </div>
       )}
     </div>
