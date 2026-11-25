@@ -34,6 +34,17 @@ test("tabela në ekran të gjerë: karta kalon me → dhe me tërheqje te kolona
   await expect.poll(async () => (await sql`SELECT statusi FROM riparimet WHERE id = ${r.id}`)[0].statusi).toBe("Gati për marrje");
   const [n] = await sql`SELECT kush, veprimi FROM ngjarjet WHERE riparim_id = ${r.id} ORDER BY id DESC LIMIT 1`;
   expect(n.veprimi).toBe("Statusi → Gati për marrje");
+
+  // Gati ka vetëm ←; kthimi mbrapa shënohet si korrigjim
+  await expect(kolona("Gati për marrje").getByRole("button", { name: `Kalo ${PREFIKSI}Moto G54 te`, exact: false })).toHaveCount(0);
+  await kolona("Gati për marrje").getByRole("button", { name: `Kthe ${PREFIKSI}Moto G54 te Në riparim` }).click();
+  await expect(kolona("Në riparim")).toContainText(PREFIKSI + "Moto G54");
+  await expect.poll(async () => (await sql`SELECT veprimi FROM ngjarjet WHERE riparim_id = ${r.id} ORDER BY id DESC LIMIT 1`)[0].veprimi).toBe("Ktheu statusin → Në riparim");
+  // Në riparim ka të dyja; Pranuar vetëm →
+  await expect(kolona("Në riparim").getByRole("button", { name: `Kalo ${PREFIKSI}Moto G54 te Gati për marrje` })).toBeVisible();
+  await kolona("Në riparim").getByRole("button", { name: `Kthe ${PREFIKSI}Moto G54 te Pranuar` }).click();
+  await expect(kolona("Pranuar")).toContainText(PREFIKSI + "Moto G54");
+  await expect(kolona("Pranuar").getByRole("button", { name: `Kthe ${PREFIKSI}Moto G54`, exact: false })).toHaveCount(0);
 });
 
 test("tabela në telefon: një kolonë në një kohë, karta tërhiqet me gisht te skeda", async ({ browser }) => {

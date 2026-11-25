@@ -29,7 +29,7 @@ export default async function Home({ searchParams }: {
     <main className="welcome">
       <div className="welcome__body">
         <header className="welcome__head">
-          <span className="welcome__icon"><Ikona emri="rregull" madhesia={42} trashesia={2.6} /></span>
+          <span className="welcome__icon"><Ikona emri="telefonGati" madhesia={52} trashesia={1.7} /></span>
           <h1>Ku është telefoni yt tani?</h1>
           <p>Ndiq riparimin nga telefoni, pa e thirrur servisin.</p>
         </header>

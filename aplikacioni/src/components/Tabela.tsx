@@ -11,6 +11,7 @@ import type { Riparim, Statusi } from "@/lib/riparimet";
 const KOLONAT: Statusi[] = ["Pranuar", "Në riparim", "Gati për marrje"];
 const SHKURT: Record<string, string> = { Pranuar: "Pranuar", "Në riparim": "Në riparim", "Gati për marrje": "Gati" };
 const TJETRA: Partial<Record<Statusi, Statusi>> = { Pranuar: "Në riparim", "Në riparim": "Gati për marrje" };
+const PARA: Partial<Record<Statusi, Statusi>> = { "Në riparim": "Pranuar", "Gati për marrje": "Në riparim" };
 
 // Karta që tërhiqet: pozicioni fillestar dhe zhvendosja e gishtit.
 type Terheqje = { id: string; x: number; y: number; w: number; dx: number; dy: number; x0: number; y0: number; mbi: Statusi | null };
@@ -110,6 +111,7 @@ export function Tabela({ riparimet }: { riparimet: Riparim[] }) {
                 {lista.map((r) => {
                   const kjo = terheqja?.id === r.id;
                   const tjetra = TJETRA[k];
+                  const para = PARA[k];
                   return (
                     <article key={r.id} className={`kcard${kjo ? " kcard--placeholder" : ""}${iLevizur === r.id ? " kcard--dropped" : ""}`}
                       onAnimationEnd={() => setILevizur(null)}>
@@ -119,11 +121,18 @@ export function Tabela({ riparimet }: { riparimet: Riparim[] }) {
                           onPointerDown={(e) => fillo(e, r)} onPointerMove={terhiq} onPointerUp={() => lesho(r)} onPointerCancel={() => setTerheqja(null)}>
                           <Ikona emri="kapje" madhesia={18} />
                         </button>
-                        {tjetra && (
-                          <button type="button" className="kcard__next" onClick={() => { void leviz(r, tjetra); }} aria-label={`Kalo ${r.pajisja} te ${tjetra}`}>
-                            <Ikona emri="djathtas" madhesia={16} trashesia={2.6} />
-                          </button>
-                        )}
+                        <div className="kcard__arrows">
+                          {para && (
+                            <button type="button" className="kcard__next kcard__next--back" onClick={() => { void leviz(r, para); }} aria-label={`Kthe ${r.pajisja} te ${para}`}>
+                              <Ikona emri="majtas" madhesia={16} trashesia={2.6} />
+                            </button>
+                          )}
+                          {tjetra && (
+                            <button type="button" className="kcard__next" onClick={() => { void leviz(r, tjetra); }} aria-label={`Kalo ${r.pajisja} te ${tjetra}`}>
+                              <Ikona emri="djathtas" madhesia={16} trashesia={2.6} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </article>
                   );

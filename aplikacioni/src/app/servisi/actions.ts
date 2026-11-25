@@ -58,11 +58,11 @@ export async function regjistroRiparimin(formData: FormData) {
 
 // Ndryshimi i statusit, i përbashkët për faqen e riparimit dhe tabelën: rreshti i regjistrit
 // shkruhet në të njëjtën komandë, dhe klienti njoftohet vetëm kur statusi ndryshon vërtet.
-async function vendosStatusin(kush: string, id: string, statusi: Statusi, zhbej: boolean) {
+async function vendosStatusin(kush: string, id: string, statusi: Statusi, zhbej: boolean, etiketa?: string) {
   const sql = getSql();
   // Një riparim i mbyllur nuk rihapet nga butonat e statusit.
   // Statusi i mëparshëm kthehet që mesazhi të ofrojë "Zhbëj".
-  const veprimi = (zhbej ? "Zhbëu statusin → " : "Statusi → ") + statusi;
+  const veprimi = (etiketa ?? (zhbej ? "Zhbëu statusin → " : "Statusi → ")) + statusi;
   const rows = await sql`WITH u AS (
       UPDATE riparimet r SET statusi = ${statusi}, perditesuar = now()
       FROM (SELECT id, statusi AS para FROM riparimet WHERE id = ${id} FOR UPDATE) v
@@ -95,11 +95,15 @@ export async function ndryshoStatusin(formData: FormData) {
     : `/servisi/riparimi/${id}?m=statusi&nga=${encodeURIComponent(r.para)}`);
 }
 
-// Nga tabela (kanban): karta tërhiqet në kolonën tjetër; faqja nuk ndryshon, vetëm rifreskohet.
+// Nga tabela (kanban): karta kalon në kolonën tjetër; faqja nuk ndryshon, vetëm rifreskohet.
+// Kthimi mbrapa është korrigjim: klienti nuk merr njoftim dhe regjistri e shënon si "Ktheu statusin".
 export async function levizKarten(id: string, statusi: string): Promise<{ ok: boolean; para?: Statusi }> {
   const p = await vetemServisi();
   if (!p || !STATUSET.includes(statusi as Statusi) || !/^\d+$/.test(id)) return { ok: false };
-  const r = await vendosStatusin(p.emri, id, statusi as Statusi, false);
+  const sql = getSql();
+  const [tani] = await sql`SELECT statusi FROM riparimet WHERE id = ${id}`;
+  const mbrapa = tani && STATUSET.indexOf(statusi as Statusi) < STATUSET.indexOf(tani.statusi as Statusi);
+  const r = await vendosStatusin(p.emri, id, statusi as Statusi, Boolean(mbrapa), mbrapa ? "Ktheu statusin → " : undefined);
   return r ? { ok: true, para: r.para } : { ok: false };
 }
 
