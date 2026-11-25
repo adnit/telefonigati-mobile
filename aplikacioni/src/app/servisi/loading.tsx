@@ -1,11 +1,15 @@
-// Brenda layout-it të stafit: shiriti i poshtëm mbetet, vetëm përmbajtja shfaq skeletin.
+import { SkGrupi, SkKapsula, SkNav, SkTitulli } from "@/components/Skeleti";
+
+// Lista e riparimeve: "+" në shirit, titulli, Lista/Tabela, kërkimi dhe seksionet sipas statusit.
 export default function Duke() {
   return (
     <main aria-busy="true" aria-label="Po ngarkohet">
-      <div className="skeleton skeleton--nav" />
-      <div className="skeleton skeleton--title" />
-      <div className="skeleton skeleton--line" />
-      <div className="skeleton skeleton--row" /><div className="skeleton skeleton--row" /><div className="skeleton skeleton--row" />
+      <SkNav djathtas={1} />
+      <SkTitulli />
+      <SkKapsula lartesia={40} />
+      <SkKapsula lartesia={42} />
+      <SkGrupi rreshta={2} ikona="i-madh" />
+      <SkGrupi rreshta={3} ikona="i-madh" />
     </main>
   );
 }

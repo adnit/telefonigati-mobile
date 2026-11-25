@@ -1,12 +1,12 @@
-// Skeleti shfaqet menjëherë gjatë leximit nga serveri, në vend të një ekrani bosh.
+import { SkGrupi, SkTitulli } from "@/components/Skeleti";
+
+// Skeleti i përgjithshëm: titull dhe një grup rreshtash.
 export default function Duke() {
   return (
     <main aria-busy="true" aria-label="Po ngarkohet">
-      <div className="skeleton skeleton--nav" />
-      <div className="skeleton skeleton--title" />
-      <div className="skeleton skeleton--line" />
-      <div className="skeleton skeleton--card" style={{ height: 200 }} />
-      <div className="skeleton skeleton--card" />
+      <div style={{ height: "calc(56px + env(safe-area-inset-top, 0px))" }} />
+      <SkTitulli />
+      <SkGrupi rreshta={3} />
     </main>
   );
 }

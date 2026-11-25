@@ -675,21 +675,22 @@ details.group[open] > summary .chev { transform: rotate(-90deg); }
 fieldset.plain { border: 0; padding: 0; min-width: 0; }
 fieldset.plain:disabled .btn { opacity: 0.4; }
 
-/* ───────── Skeleti i ngarkimit ───────── */
+/* ───────── Skeleti i ngarkimit ─────────
+   Vija gri brenda kartave të vërteta; një shkëlqim i butë kalon mbi to. */
 
-.skeleton {
-  border-radius: var(--r);
-  background: linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 50%, var(--surface) 100%);
-  background-size: 200% 100%; animation: shkelqim 1.4s ease-in-out infinite;
+.sk {
+  display: inline-block; flex: none; max-width: 100%; border-radius: 6px;
+  background: linear-gradient(100deg, var(--fill) 30%, var(--fill-strong) 50%, var(--fill) 70%);
+  background-size: 250% 100%; animation: shkelqim 1.5s ease-in-out infinite;
 }
-.skeleton--nav { height: 48px; margin: 0 -16px; border-radius: 0; background: transparent; animation: none; }
-.skeleton--title { height: 40px; width: 58%; margin: 8px 4px 22px; }
-.skeleton--line { height: 16px; width: 40%; margin: 0 4px 22px; }
-.skeleton--card { height: 132px; margin: 0 0 16px; border-radius: var(--r-lg); }
-.skeleton--row { height: 62px; margin: 0 0 1px; border-radius: 0; }
-.skeleton--row:first-of-type { border-radius: var(--r) var(--r) 0 0; }
-.skeleton--row:last-of-type { border-radius: 0 0 var(--r) var(--r); }
-@keyframes shkelqim { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.sk--round { border-radius: 50%; }
+.sk-icon { width: 30px; height: 30px; border-radius: 9px; }
+.sk-icon--lg { width: 42px; height: 42px; border-radius: 11px; }
+.sk-lines { display: grid; gap: 8px; align-content: center; }
+.sk-title { display: grid; gap: 10px; }
+.sk-capsule { display: block; width: 100%; margin: 0 0 18px; border-radius: 999px; }
+main[aria-busy="true"] { animation: faqja-hyn 200ms ease-out 120ms both; }
+@keyframes shkelqim { from { background-position: 100% 0; } to { background-position: -150% 0; } }
 
 /* ───────── Fleta me QR (printohet) ───────── */
 

@@ -4,7 +4,12 @@ import Pwa from "@/components/Pwa";
 import { SKRIPTI_I_TEMES } from "@/components/Tema";
 
 export const metadata: Metadata = {
+  // Adresa e plotë e faqes, që parapamja e linkut (WhatsApp, Viber) të gjejë foton.
+  metadataBase: new URL(process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.NEXTAUTH_URL ?? "http://localhost:3000"),
   title: "TelefoniGati",
+  openGraph: { title: "TelefoniGati · Ku është telefoni yt tani?", description: "Statusi i riparimit, kostoja shtesë dhe njoftimi kur është gati.", siteName: "TelefoniGati", locale: "sq_AL", type: "website" },
   description: "Statusi i riparimit të telefonit",
   // Faqet e riparimeve janë private: motorët e kërkimit nuk duhet t'i ruajnë.
   robots: { index: false, follow: false },
