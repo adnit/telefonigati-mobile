@@ -17,7 +17,7 @@ export const profiliIm = cache(async (): Promise<Profil | null> => {
   const email = session.user.email?.toLowerCase() ?? null;
   const rows = await sql`WITH ftesa AS (DELETE FROM ftesat WHERE email = ${email} RETURNING 1)
     INSERT INTO profilet AS p (llogaria_id, emri, email, roli)
-    VALUES (${id}, ${session.user.name ?? "Punonjës"}, ${session.user.email ?? null},
+    VALUES (${id}, ${session.user.name ?? "Përdorues"}, ${session.user.email ?? null},
       CASE WHEN EXISTS (SELECT 1 FROM ftesa) THEN 'servis' ELSE 'vizitor' END)
     ON CONFLICT (llogaria_id) DO UPDATE SET
       email = EXCLUDED.email,

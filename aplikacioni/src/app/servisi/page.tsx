@@ -69,7 +69,14 @@ export default async function Servisi({ searchParams }: {
           <h1>Llogaria nuk është ende e stafit</h1>
           <p>Përshëndetje, {p.emri}. Pronari i servisit duhet ta aktivizojë llogarinë{p.email ? <> për <strong>{p.email}</strong></> : null}.</p>
         </section>
-        <div className="group"><div className="group__body"><Hyrja brenda /></div></div>
+        <div className="group"><div className="group__body">
+          <Link className="row row--link row--icon" href="/llogaria">
+            <span className="row__icon" style={{ "--icon-bg": "#0a84ff" } as React.CSSProperties}><Ikona emri="njeri" madhesia={16} /></span>
+            <span className="row__main"><span className="row__title">Je klient? Riparimet e mia</span></span>
+            <Ikona emri="djathtas" madhesia={18} trashesia={2.4} className="chev" />
+          </Link>
+          <Hyrja brenda />
+        </div></div>
       </main>
     );
   }

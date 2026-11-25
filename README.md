@@ -20,6 +20,7 @@ Pamja ndjek temën e telefonit (e çelët ose e errët, me zgjedhje me dorë), m
 - **Marrja**: klienti nënshkruan në ekranin e stafit; nënshkrimi ruhet me riparimin dhe e sheh edhe klienti.
 - **Pronari** menaxhon çmimoren, me ftesa me email dhe të dhënat e servisit (emri, telefoni, orari, adresa) te “Cilësimet”.
 - **Klienti** (pa llogari, me link privat ose QR): kur statusi ndryshon me faqen të hapur, karta animohet dhe nga lart zbret njoftimi “Telefoni yt është gati!”; sheh statusin me kohën e secilit hap dhe datën e pritur, fotot e pranimit dhe shumën; miraton ose refuzon koston shtesë; merr njoftim kur telefoni është gati; telefonon servisin ose i shkruan në WhatsApp; e sheh statusin e fundit edhe pa internet. Pas marrjes përgjigjet me një prekje: “A të kurseu ky link një telefonatë?”
+- **Llogaria e klientit (opsionale)**: klienti hyn me Google dhe ruan riparimet te “Riparimet e mia”, në çdo pajisje; i heq nga lista ose e fshin llogarinë kur të dojë. Pa llogari, linku punon njësoj.
 - **Siguria**: rolet kontrollohen në server, linku i klientit është kod i rastësishëm 32-shifror dhe skadon 30 ditë pas marrjes, numri i klientit dhe shënimet nuk i shfaqen kurrë klientit, faqet nuk indeksohen dhe linku nuk dërgohet si Referer. Kodet e gabuara bllokohen pas 20 provave në 10 minuta për çdo IP (ruhet vetëm hash-i), dhe Content-Security-Policy lejon skripte e lidhje vetëm nga vetë aplikacioni.
 
 ## Nisja
@@ -62,7 +63,7 @@ NEXTAUTH_SECRET="vlerë e rastësishme"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-Databaza: çdo skedar SQL ekzekutohet në një transaksion me `npm run db:migrate -- <skedari.sql>`. Ekzekuto me radhë `schema.sql`, `schema-java05.sql`, `schema-java05b.sql`, `schema-java08.sql`, `schema-mbyllja.sql`, `schema-njoftimet.sql`, `schema-perfundimi.sql`, `schema-v2.sql`, `schema-v3.sql` dhe `schema-v4.sql` (ose ngjiti në Neon SQL Editor). Pas hyrjes së parë me Google, bëje llogarinë tënde pronar; stafin tjetër e fton pastaj nga “Cilësimet”:
+Databaza: çdo skedar SQL ekzekutohet në një transaksion me `npm run db:migrate -- <skedari.sql>`. Ekzekuto me radhë `schema.sql`, `schema-java05.sql`, `schema-java05b.sql`, `schema-java08.sql`, `schema-mbyllja.sql`, `schema-njoftimet.sql`, `schema-perfundimi.sql`, `schema-v2.sql`, `schema-v3.sql`, `schema-v4.sql` dhe `schema-v5.sql` (ose ngjiti në Neon SQL Editor). Pas hyrjes së parë me Google, bëje llogarinë tënde pronar; stafin tjetër e fton pastaj nga “Cilësimet”:
 
 ```sql
 UPDATE profilet SET roli = 'pronar' WHERE email = 'emaili.yt@gmail.com';

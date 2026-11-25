@@ -14,15 +14,16 @@ function LogoGoogle() {
   );
 }
 
-export default function Hyrja({ brenda }: { brenda: boolean }) {
+// pas: ku kthehet përdoruesi pas hyrjes ose daljes (stafi te /servisi, klienti te /llogaria ose te riparimi).
+export default function Hyrja({ brenda, pas = "/servisi" }: { brenda: boolean; pas?: string }) {
   return brenda
     ? (
-      <button type="button" className="row row--button row--danger" onClick={() => signOut({ callbackUrl: "/servisi" })}>
+      <button type="button" className="row row--button row--danger" onClick={() => signOut({ callbackUrl: pas })}>
         <Ikona emri="dil" madhesia={19} /> Dil nga llogaria
       </button>
     )
     : (
-      <button type="button" className="btn btn--white btn--block btn--large" onClick={() => signIn("google", { callbackUrl: "/servisi" })}>
+      <button type="button" className="btn btn--white btn--block btn--large" onClick={() => signIn("google", { callbackUrl: pas })}>
         <LogoGoogle /> Hyr me Google
       </button>
     );

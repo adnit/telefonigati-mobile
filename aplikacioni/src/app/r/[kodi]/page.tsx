@@ -15,6 +15,10 @@ import { Toast } from "@/components/Toast";
 import { eshteBllokuar, shenoKodTeGabuar } from "@/lib/kufiri";
 import { Dergo } from "@/components/Dergo";
 import { ruajPershtypjen, vendosKostoShtese } from "./actions";
+import { ruajRiparimin } from "@/app/llogaria/actions";
+import { eshteRuajtur } from "@/lib/klienti";
+import { profiliIm } from "@/lib/servisi";
+import Hyrja from "@/components/Hyrja";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +27,7 @@ const mesazhet: Record<string, [string, "ok" | "gabim"]> = {
   refuzuar: ["U ruajt. Riparimi shtesë nuk bëhet; çmimi mbetet ai i vlerësuar.", "ok"],
   vendosur: ["Për këtë kosto është vendosur tashmë.", "gabim"],
   pershtypja: ["Faleminderit! Përgjigjja jote e ndihmon servisin.", "ok"],
+  ruajtur: ["U ruajt te Riparimet e mia.", "ok"],
 };
 
 export default async function RiparimiIm({ params, searchParams }: {
@@ -71,7 +76,9 @@ export default async function RiparimiIm({ params, searchParams }: {
   const toast = m ? mesazhet[m] : undefined;
   const telServisi = servisi?.telefoni ?? null;
   const totali = llogaritTotalin(r);
-  const pyetPershtypjen = r.statusi === "Marrë" && !(await kaPershtypje(kodi).catch(() => true));
+  const [kaPershtypjeJo, profili] = await Promise.all([kaPershtypje(kodi).catch(() => true), profiliIm().catch(() => null)]);
+  const pyetPershtypjen = r.statusi === "Marrë" && !kaPershtypjeJo;
+  const ruajtur = profili ? await eshteRuajtur(profili.id, kodi).catch(() => false) : false;
 
   const mbyllur = r.statusi === "Marrë";
   const ngjyra = (c: string) => ({ "--icon-bg": c }) as React.CSSProperties;
@@ -80,7 +87,10 @@ export default async function RiparimiIm({ params, searchParams }: {
     <main>
       {versioni && !mbyllur && <Live url={`/api/r/${kodi}/versioni`} versioni={versioni} intervali={3000} />}
       <StatusLive statusi={r.statusi} />
-      <div className="brandbar"><Marka /></div>
+      <div className="brandbar">
+        <Marka />
+        <Link href="/llogaria" className="nav__icon" aria-label="Riparimet e mia"><Ikona emri="njeri" madhesia={20} /></Link>
+      </div>
       <PageTitle sipër={`Riparimi nr. ${r.id}${servisi ? ` · ${servisi.emri}` : ""}`} titulli={r.pajisja} nentitulli={r.problemi} />
       <PaInternet perditesuar={r.perditesuar} />
 
@@ -198,6 +208,34 @@ export default async function RiparimiIm({ params, searchParams }: {
           </div>
         </section>
       )}
+
+      <section className="group" aria-label="Riparimet e mia">
+        <div className="group__body">
+          {ruajtur ? (
+            <Link className="row row--link row--icon" href="/llogaria">
+              <span className="row__icon" style={ngjyra("var(--gati-fill)")}><Ikona emri="rregull" madhesia={16} trashesia={2.6} /></span>
+              <span className="row__main"><span className="row__title">E ruajtur te Riparimet e mia</span></span>
+              <Ikona emri="djathtas" madhesia={18} trashesia={2.4} className="chev" />
+            </Link>
+          ) : profili ? (
+            <form action={ruajRiparimin}>
+              <input type="hidden" name="kodi" value={r.kodi} />
+              <Dergo className="row row--button row--icon row--accent" pritja="Po ruhet…">
+                <span className="row__icon" style={ngjyra("#0a84ff")}><Ikona emri="shto" madhesia={16} trashesia={2.6} /></span>
+                <span className="row__main"><span className="row__title">Ruaje te Riparimet e mia</span></span>
+              </Dergo>
+            </form>
+          ) : (
+            <div className="row row--stack">
+              <span className="row__main">
+                <span className="row__title">Ruaje në llogarinë tënde</span>
+                <span className="row__sub">Opsionale: i gjen riparimet në çdo pajisje. Pa llogari, ky link punon njësoj.</span>
+              </span>
+              <Hyrja brenda={false} pas={`/r/${r.kodi}`} />
+            </div>
+          )}
+        </div>
+      </section>
 
       <div className="theme-pick"><p>Pamja</p><ZgjedhTemen /></div>
 

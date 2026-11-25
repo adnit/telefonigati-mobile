@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Ikona } from "@/components/Ikona";
+import { Nav } from "@/components/Nav";
 
 const mesazhet: Record<string, string> = {
   kodi: "Ky link nuk është i vlefshëm. Kërkoja servisit linkun e riparimit.",
+  "llogaria-fshire": "Llogaria u fshi. Linqet e riparimeve vazhdojnë të punojnë.",
 };
 
 // Klienti zakonisht hyn drejtpërdrejt nga linku që i dërgon servisi.
@@ -27,7 +29,8 @@ export default async function Home({ searchParams }: {
   const { m } = await searchParams;
   return (
     <main className="welcome">
-      <div className="welcome__body">
+      <Nav djathtas={<Link href="/llogaria" className="nav__icon" aria-label="Riparimet e mia"><Ikona emri="njeri" madhesia={20} /></Link>} />
+      <div className="welcome__body" style={{ paddingTop: 8 }}>
         <header className="welcome__head">
           <span className="welcome__icon"><Ikona emri="telefonGati" madhesia={52} trashesia={1.7} /></span>
           <h1>Ku është telefoni yt tani?</h1>
@@ -44,7 +47,7 @@ export default async function Home({ searchParams }: {
       </div>
 
       <form action={hapKodin} className="welcome__actions">
-        {m && mesazhet[m] && <p className="alert" role="alert"><Ikona emri="kujdes" madhesia={18} />{mesazhet[m]}</p>}
+        {m && mesazhet[m] && <p className={`alert${m === "llogaria-fshire" ? " alert--ok" : ""}`} role="alert"><Ikona emri={m === "llogaria-fshire" ? "rregull" : "kujdes"} madhesia={18} />{mesazhet[m]}</p>}
         <div className="group">
           <div className="group__body">
             <div className="field">
