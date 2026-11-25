@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Ikona } from "@/components/Ikona";
-import { ZgjedhTemen } from "@/components/Tema";
 
 const mesazhet: Record<string, string> = {
   kodi: "Ky link nuk është i vlefshëm. Kërkoja servisit linkun e riparimit.",
@@ -16,35 +15,48 @@ async function hapKodin(formData: FormData) {
   redirect(kodi ? `/r/${kodi}` : "/?m=kodi");
 }
 
+const PIKAT = [
+  { ikona: "ore" as const, titulli: "Statusi në kohë reale", teksti: "Shiko kur telefoni hyn në riparim dhe kur del gati." },
+  { ikona: "euro" as const, titulli: "Kosto shtesë pa telefonata", teksti: "Mirato ose refuzo me një prekje." },
+  { ikona: "zile" as const, titulli: "Njoftim kur është gati", teksti: "Pa e hapur faqen dhe pa thirrur servisin." },
+];
+
 export default async function Home({ searchParams }: {
   searchParams: Promise<{ m?: string }>;
 }) {
   const { m } = await searchParams;
   return (
-    <main>
-      <section className="hero" style={{ paddingTop: "calc(56px + env(safe-area-inset-top, 0px))" }}>
-        <span className="hero__icon"><Ikona emri="rregull" madhesia={40} trashesia={2.6} /></span>
-        <h1>Ku është telefoni yt tani?</h1>
-        <p>Shiko statusin e riparimit dhe mirato koston shtesë nga telefoni, pa e thirrur servisin.</p>
-      </section>
+    <main className="welcome">
+      <div className="welcome__body">
+        <header className="welcome__head">
+          <span className="welcome__icon"><Ikona emri="rregull" madhesia={42} trashesia={2.6} /></span>
+          <h1>Ku është telefoni yt tani?</h1>
+          <p>Ndiq riparimin nga telefoni, pa e thirrur servisin.</p>
+        </header>
+        <div className="welcome__points">
+          {PIKAT.map((x) => (
+            <div key={x.titulli} className="welcome__point">
+              <Ikona emri={x.ikona} madhesia={30} trashesia={1.8} />
+              <div><strong>{x.titulli}</strong><span>{x.teksti}</span></div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-      <form action={hapKodin}>
+      <form action={hapKodin} className="welcome__actions">
         {m && mesazhet[m] && <p className="alert" role="alert"><Ikona emri="kujdes" madhesia={18} />{mesazhet[m]}</p>}
         <div className="group">
           <div className="group__body">
             <div className="field">
               <label htmlFor="kodi">Linku ose kodi i riparimit</label>
               <input id="kodi" name="kodi" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false}
-                enterKeyHint="go" required placeholder="Ngjite linkun që të dërgoi servisi" />
+                enterKeyHint="go" required placeholder="Ngjite linkun nga servisi" />
             </div>
           </div>
-          <p className="group__foot">Zakonisht nuk të duhet: hape direkt linkun nga WhatsApp ose skano QR-në në fletë.</p>
         </div>
-        <button className="btn btn--primary btn--block" type="submit">Shiko riparimin</button>
+        <button className="btn btn--primary btn--block btn--large" type="submit">Shiko riparimin</button>
+        <Link className="btn btn--plain" href="/servisi">Jam staf i servisit</Link>
       </form>
-
-      <Link className="footer-link" href="/servisi">Hyrja për servisin</Link>
-      <div className="theme-pick"><ZgjedhTemen /></div>
     </main>
   );
 }

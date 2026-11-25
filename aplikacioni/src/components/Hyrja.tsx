@@ -22,7 +22,7 @@ export default function Hyrja({ brenda }: { brenda: boolean }) {
       </button>
     )
     : (
-      <button type="button" className="btn btn--white btn--block" onClick={() => signIn("google", { callbackUrl: "/servisi" })}>
+      <button type="button" className="btn btn--white btn--block btn--large" onClick={() => signIn("google", { callbackUrl: "/servisi" })}>
         <LogoGoogle /> Hyr me Google
       </button>
     );

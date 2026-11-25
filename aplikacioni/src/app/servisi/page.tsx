@@ -40,15 +40,23 @@ export default async function Servisi({ searchParams }: {
 
   if (!p) {
     return (
-      <main>
-        <section className="hero" style={{ paddingTop: "calc(56px + env(safe-area-inset-top, 0px))" }}>
-          <span className="hero__icon"><Ikona emri="celes" madhesia={36} trashesia={2} /></span>
-          <h1>Hyrja për servisin</h1>
-          <p>Regjistro riparimet në banak, ndrysho statusin dhe dërgoja klientit koston shtesë.</p>
-        </section>
-        <Hyrja brenda={false} />
-        <p className="group__foot" style={{ textAlign: "center", marginTop: 10 }}>Stafi hyn me llogarinë Google që ka ftuar pronari.</p>
-        <Link className="footer-link" href="/">Je klient? Hape linkun e riparimit</Link>
+      <main className="welcome">
+        <div className="welcome__body">
+          <header className="welcome__head">
+            <span className="welcome__icon"><Ikona emri="celes" madhesia={40} trashesia={2.2} /></span>
+            <h1>Hyrja për servisin</h1>
+            <p>Regjistro riparimet në banak dhe mbaje klientin në dijeni pa telefonata.</p>
+          </header>
+          <div className="welcome__points">
+            <div className="welcome__point"><Ikona emri="shto" madhesia={30} trashesia={1.8} /><div><strong>Pranimi në sekonda</strong><span>Marka, modeli dhe çmimi me disa prekje.</span></div></div>
+            <div className="welcome__point"><Ikona emri="tabela" madhesia={30} trashesia={1.8} /><div><strong>Tabela e punës</strong><span>Çdo telefon, nga pranimi te marrja.</span></div></div>
+            <div className="welcome__point"><Ikona emri="link" madhesia={30} trashesia={1.8} /><div><strong>Linku i klientit</strong><span>Me WhatsApp ose QR, pa llogari për klientin.</span></div></div>
+          </div>
+        </div>
+        <div className="welcome__actions">
+          <Hyrja brenda={false} />
+          <Link className="btn btn--plain" href="/">Jam klient</Link>
+        </div>
       </main>
     );
   }
