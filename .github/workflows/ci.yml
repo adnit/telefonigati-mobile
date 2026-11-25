@@ -38,6 +38,7 @@ jobs:
     steps:
       - name: Pa sekretin TEST_DATABASE_URL testet end-to-end anashkalohen
         if: env.DATABASE_URL == ''
+        working-directory: .
         run: echo "::notice::Shto sekretin TEST_DATABASE_URL (një degë Neon) për të ekzekutuar testet end-to-end."
       - uses: actions/checkout@v4
         if: env.DATABASE_URL != ''
