@@ -7,11 +7,12 @@ import { profiliIm } from "@/lib/servisi";
 
 // Klienti ruan riparimin nga faqja e tij: kush ka linkun privat (kodin) mund ta lidhë me llogarinë e vet.
 // Linku duhet të jetë ende aktiv (riparim i hapur ose i marrë brenda 30 ditëve).
+// Vetëm llogaritë e klientëve ruajnë riparime; llogaritë e stafit janë llogari pune.
 export async function ruajRiparimin(formData: FormData) {
   const kodi = String(formData.get("kodi") ?? "");
   if (!/^[0-9a-f]{32}$/.test(kodi)) redirect("/?m=kodi");
   const p = await profiliIm();
-  if (!p) redirect(`/r/${kodi}`);
+  if (!p || p.roli !== "vizitor") redirect(`/r/${kodi}`);
   const sql = getSql();
   await sql`INSERT INTO klientet_riparimet (llogaria_id, riparim_id)
     SELECT ${p.id}, id FROM riparimet WHERE kodi = ${kodi} AND (marre IS NULL OR marre > now() - interval '30 days')

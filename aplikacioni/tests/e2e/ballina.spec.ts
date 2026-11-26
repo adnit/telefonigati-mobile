@@ -41,3 +41,23 @@ test("klienti: riparimet e ruajtura në faqen e parë; te /servisi merr rrugëda
   await expect(p.getByRole("link", { name: "Riparimet e mia" })).toBeVisible();
   await expect(p.getByRole("button", { name: "Dil dhe hyr me llogari tjetër" })).toBeVisible();
 });
+
+test("stafi nuk ka Riparimet e mia: as në faqen e parë, as te llogaria, as te linku i klientit", async ({ browser }) => {
+  const [r] = await sql`INSERT INTO riparimet (id, kodi, pajisja, problemi, dorezuar, statusi, cmimi)
+    VALUES (nextval('riparimet_nr')::text, replace(gen_random_uuid()::text, '-', ''), ${PREFIKSI + "Galaxy S24"}, 'Ekrani', current_date, 'Pranuar', 90) RETURNING id`;
+  const c = await browser.newContext();
+  await hyr(c, STAFI, "servis", "Arta Provë");
+  // Edhe nëse llogaria ka ruajtur diçka para se të bëhej staf, nuk i shfaqet.
+  await sql`INSERT INTO klientet_riparimet (llogaria_id, riparim_id) VALUES (${STAFI}, ${r.id}) ON CONFLICT DO NOTHING`;
+  const p = await c.newPage();
+  await p.goto("/");
+  await expect(p.getByRole("region", { name: "Riparimet e mia" })).toHaveCount(0);
+  await p.goto("/llogaria");
+  await expect(p.locator("main h1")).toHaveText("Llogaria");
+  await expect(p.getByText(PREFIKSI + "Galaxy S24")).toHaveCount(0);
+  await expect(p.getByRole("link", { name: "Paneli i servisit" })).toBeVisible();
+  await p.goto(`/r/${await kodiI(r.id)}`);
+  await expect(p.getByRole("button", { name: "Ruaje te Riparimet e mia" })).toHaveCount(0);
+  await expect(p.getByRole("link", { name: /Hape në panelin e servisit/ })).toBeVisible();
+  await sql`DELETE FROM klientet_riparimet WHERE llogaria_id = ${STAFI}`;
+});

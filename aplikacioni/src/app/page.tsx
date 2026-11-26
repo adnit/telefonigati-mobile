@@ -93,9 +93,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
   }
 
   const staf = eshteStaf(p);
+  // Stafi sheh panelin e servisit; "Riparimet e mia" është vetëm për llogaritë e klientëve.
   const [puna, teMiat] = await Promise.all([
     staf ? numeroPunen().catch(() => null) : null,
-    lexoRiparimetEMia(p.id).catch(() => []),
+    staf ? [] : lexoRiparimetEMia(p.id).catch(() => []),
   ]);
   const teHapura = teMiat.filter((r) => r.statusi !== "Marrë");
   const emri = p.emri.split(" ")[0];
@@ -127,7 +128,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
         </section>
       )}
 
-      {(!staf || teMiat.length > 0) && (
+      {!staf && (
         <section className="group" aria-label="Riparimet e mia">
           <div className="group__head"><h2>Riparimet e mia</h2>{teMiat.length > 0 && <Link href="/llogaria" className="group__link">Të gjitha</Link>}</div>
           <div className="group__body">

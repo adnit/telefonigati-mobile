@@ -43,16 +43,19 @@ export default async function Llogaria({ searchParams }: { searchParams: Promise
     );
   }
 
-  const riparimet = await lexoRiparimetEMia(p.id);
+  const staf = eshteStaf(p);
+  // Llogaria e stafit është llogari pune: pa listë riparimesh personale.
+  const riparimet = staf ? [] : await lexoRiparimetEMia(p.id);
   const aktive = riparimet.filter((r) => r.statusi !== "Marrë");
   const mbyllura = riparimet.filter((r) => r.statusi === "Marrë");
 
   return (
     <main>
-      <Nav prapa={{ href: "/", emri: "Faqja kryesore" }} titulli="Riparimet e mia" />
-      <PageTitle titulli="Riparimet e mia" nentitulli={`Përshëndetje, ${p.emri.split(" ")[0]}.`} />
+      <Nav prapa={{ href: "/", emri: "Faqja kryesore" }} titulli={staf ? "Llogaria" : "Riparimet e mia"} />
+      <PageTitle titulli={staf ? "Llogaria" : "Riparimet e mia"}
+        nentitulli={staf ? (p.roli === "pronar" ? "Pronar i servisit" : "Staf i servisit") : `Përshëndetje, ${p.emri.split(" ")[0]}.`} />
 
-      {riparimet.length === 0 ? (
+      {staf ? null : riparimet.length === 0 ? (
         <div className="empty">
           <Ikona emri="link" madhesia={40} trashesia={1.6} />
           <strong>Asnjë riparim i ruajtur</strong>
@@ -65,7 +68,7 @@ export default async function Llogaria({ searchParams }: { searchParams: Promise
         </>
       )}
 
-      {eshteStaf(p) && (
+      {staf && (
         <section className="group" aria-label="Servisi">
           <div className="group__body">
             <Link className="row row--link row--icon" href="/servisi">
