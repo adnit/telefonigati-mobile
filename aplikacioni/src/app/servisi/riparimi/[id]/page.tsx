@@ -45,11 +45,11 @@ const ngjyra = (c: string) => ({ "--icon-bg": c }) as React.CSSProperties;
 
 export default async function RiparimiServisit({ params, searchParams }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ m?: string; nga?: string }>;
+  searchParams: Promise<{ m?: string; nga?: string; marrja?: string }>;
 }) {
   if (!(await vetemServisi())) redirect("/servisi");
   const { id } = await params;
-  const { m, nga } = await searchParams;
+  const { m, nga, marrja } = await searchParams;
   // Të gjitha leximet sipas numrit, njëherësh.
   const [r, versioni, kohet, shenimet, ngjarjet, nenshkrimi] = await Promise.all([
     gjejRiparimin(id), versioniSipasNumrit(id), lexoHistorikun(id), lexoShenimet(id), lexoNgjarjet(id), lexoNenshkrimin({ id }),
@@ -104,7 +104,7 @@ export default async function RiparimiServisit({ params, searchParams }: {
               presKlientin ? (
                 <p className="status-note close-note">Mbyllja pret vendimin e klientit për koston shtesë.</p>
               ) : (
-                <Sheet titulli="Marrja e telefonit" klasaButonit="btn btn--success btn--block" butoni={<><Ikona emri="qese" />Klienti e mori · {totali(r)} €</>}>
+                <Sheet titulli="Marrja e telefonit" klasaButonit="btn btn--success btn--block" hapur={marrja === "1"} butoni={<><Ikona emri="qese" />Klienti e mori · {totali(r)} €</>}>
                   <form action={mbyllRiparimin}>
                     <input type="hidden" name="id" value={r.id} />
                     <div className="group">

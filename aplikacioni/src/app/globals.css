@@ -1072,3 +1072,5 @@ main.main--wide { max-width: 1120px; }
 .ptr--mbaron { opacity: 0; }
 .ptr__icon { display: grid; place-items: center; transition: transform 80ms linear; }
 .ptr .spinner { width: 18px; height: 18px; }
+.kcard__done { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--gati-fill); color: #fff; }
+.kcard__done:active { transform: scale(0.9); }

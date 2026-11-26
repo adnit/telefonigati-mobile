@@ -1,15 +1,17 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Ikona } from "@/components/Ikona";
 
 // Fletë që ngjitet nga poshtë, si në aplikacionet e telefonit. Përdor <dialog>, prandaj fokusi,
 // Escape dhe sfondi menaxhohen nga shfletuesi. Mbyllet me ✕, me prekje jashtë, ose duke e tërhequr poshtë:
 // fleta ndjek gishtin 1:1 dhe mbyllet kur lëshohet larg ose me shpejtësi; përndryshe kthehet në vend.
-export function Sheet({ butoni, titulli, klasaButonit = "btn btn--gray btn--block", children }: {
+// hapur: fleta hapet vetë sapo shfaqet faqja (p.sh. "Klienti e mori" nga tabela hap menjëherë nënshkrimin).
+export function Sheet({ butoni, titulli, klasaButonit = "btn btn--gray btn--block", hapur = false, children }: {
   butoni: React.ReactNode;
   titulli: string;
   klasaButonit?: string;
+  hapur?: boolean;
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -22,6 +24,14 @@ export function Sheet({ butoni, titulli, klasaButonit = "btn btn--gray btn--bloc
     d.showModal();
     d.addEventListener("animationend", () => { d.style.animation = "none"; }, { once: true });
   }
+
+  useEffect(() => {
+    if (!hapur) return;
+    hap();
+    // Parametri që e hapi hiqet nga adresa, që rifreskimi të mos e hapë sërish.
+    const u = new URL(window.location.href);
+    if (u.searchParams.has("marrja")) { u.searchParams.delete("marrja"); window.history.replaceState(null, "", u.pathname + u.search); }
+  }, [hapur]);
 
   function mbyll() {
     const d = ref.current;

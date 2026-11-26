@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { euro, imeiVlefshem, normalizoImei, normalizoTelefonin, validoDaten } from "../src/lib/rregullat";
+import { euro, imeiVlefshem, ndryshoProblemin, normalizoImei, normalizoTelefonin, validoDaten } from "../src/lib/rregullat";
 
 // Rregullat e validimit pa shfletues dhe pa databazë: të shpejta, ekzekutohen në çdo push.
 test.describe("rregullat", () => {
@@ -37,5 +37,14 @@ test.describe("rregullat", () => {
     expect(normalizoImei("49-015420-323751-8")).toBe("490154203237518");
     expect(normalizoImei("123")).toBe("gabim");
     expect(normalizoImei("")).toBeNull();
+  });
+
+  test("çipat e problemit: prekja e parë shton, e dyta heq", () => {
+    expect(ndryshoProblemin("", "Bateria")).toBe("Bateria");
+    expect(ndryshoProblemin("Bateria", "Bateria")).toBe("");
+    expect(ndryshoProblemin("Ekrani i thyer", "Bateria")).toBe("Ekrani i thyer, bateria");
+    expect(ndryshoProblemin("Ekrani i thyer, bateria", "Ekrani i thyer")).toBe("Bateria");
+    expect(ndryshoProblemin("Ekrani i thyer, bateria, kamera", "Bateria")).toBe("Ekrani i thyer, kamera");
+    expect(ndryshoProblemin("Ekrani i thyer në cep, bateria", "Bateria")).toBe("Ekrani i thyer në cep");
   });
 });

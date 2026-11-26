@@ -105,3 +105,39 @@ test("çmimorja: stafi nuk e sheh dhe nuk e ndryshon", async ({ browser }) => {
   await expect(p.locator("#cmimorja")).toHaveCount(0);
   await expect(p.locator("#c-problemi")).toHaveCount(0);
 });
+
+test("pranimi: çipat e problemit dhe modelit hiqen me prekjen e dytë", async ({ browser }) => {
+  const c = await browser.newContext();
+  await hyr(c, STAFI, "servis");
+  const p = await c.newPage();
+  await p.goto("/servisi/i-ri");
+  const cipat = p.getByRole("group", { name: "Problemet e shpeshta" });
+  await cipat.getByRole("button", { name: "Ekrani i thyer" }).click();
+  await cipat.getByRole("button", { name: "Bateria" }).click();
+  await expect(p.locator("#problemi")).toHaveValue("Ekrani i thyer, bateria");
+  await cipat.getByRole("button", { name: "Ekrani i thyer" }).click();
+  await expect(p.locator("#problemi")).toHaveValue("Bateria");
+  await expect(cipat.getByRole("button", { name: "Ekrani i thyer" })).toHaveAttribute("aria-pressed", "false");
+  await cipat.getByRole("button", { name: "Bateria" }).click();
+  await expect(p.locator("#problemi")).toHaveValue("");
+
+  await p.getByRole("button", { name: /Samsung/ }).click();
+  await p.getByRole("button", { name: "Galaxy A54" }).click();
+  await expect(p.locator("#pajisja")).toHaveValue("Samsung Galaxy A54");
+  await p.getByRole("button", { name: "Galaxy A54" }).click();
+  await expect(p.locator("#pajisja")).toHaveValue("");
+});
+
+test("tabela: nga kolona Gati, “Klienti e mori” hap riparimin me nënshkrimin", async ({ browser }) => {
+  const [r] = await sql`INSERT INTO riparimet (id, kodi, pajisja, problemi, dorezuar, statusi, cmimi)
+    VALUES (nextval('riparimet_nr')::text, replace(gen_random_uuid()::text, '-', ''), ${PREFIKSI + "Pixel 7a"}, 'Bateria', current_date, 'Gati për marrje', 40) RETURNING id`;
+  const c = await browser.newContext({ viewport: { width: 1200, height: 900 } });
+  await hyr(c, STAFI, "servis");
+  const p = await c.newPage();
+  await p.goto("/servisi/tabela");
+  await p.locator('section[data-kolona="Gati për marrje"]').getByRole("link", { name: `Klienti e mori ${PREFIKSI}Pixel 7a` }).click();
+  await expect(p).toHaveURL(new RegExp(`/servisi/riparimi/${r.id}$`));
+  await expect(p.locator("dialog[open]")).toContainText("Marrja e telefonit");
+  await expect(p.locator("dialog[open] canvas")).toBeVisible();
+  await expect(p.locator("dialog[open]").getByRole("button", { name: /Konfirmo marrjen · 40 €/ })).toBeDisabled();
+});

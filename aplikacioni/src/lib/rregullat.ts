@@ -46,3 +46,22 @@ export function normalizoImei(hyrja: string): string | null | "gabim" {
   if (!v) return null;
   return imeiVlefshem(v) ? v : "gabim";
 }
+
+// Çipat e problemit te pranimi: prekja e parë e shton problemin në përshkrim, e dyta e heq.
+// Teksti i shkruar me dorë rreth tij mbetet; presjet dhe hapësirat rregullohen.
+export function kaProblemin(teksti: string, problemi: string): boolean {
+  return teksti.toLocaleLowerCase("sq").includes(problemi.toLocaleLowerCase("sq"));
+}
+
+export function ndryshoProblemin(teksti: string, problemi: string): string {
+  if (!kaProblemin(teksti, problemi)) {
+    const t = teksti.trim().replace(/[.,]$/, "");
+    return t ? `${t}, ${problemi.toLocaleLowerCase("sq")}` : problemi;
+  }
+  const i = teksti.toLocaleLowerCase("sq").indexOf(problemi.toLocaleLowerCase("sq"));
+  const mbetet = (teksti.slice(0, i) + teksti.slice(i + problemi.length))
+    .replace(/\s*,\s*(,\s*)+/g, ", ")
+    .replace(/^[\s,]+|[\s,]+$/g, "")
+    .replace(/\s{2,}/g, " ");
+  return mbetet ? mbetet[0].toLocaleUpperCase("sq") + mbetet.slice(1) : "";
+}

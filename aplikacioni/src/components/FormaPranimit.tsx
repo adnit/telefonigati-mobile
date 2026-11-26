@@ -5,6 +5,7 @@ import { DataGati, pasDitesh } from "@/components/DataGati";
 import { Ikona } from "@/components/Ikona";
 import { SkanoImei } from "@/components/SkanoImei";
 import { KATALOGU, emriIPajisjes, gjejCmimin, gjejMarken, type Cmim } from "@/lib/katalogu";
+import { kaProblemin, ndryshoProblemin } from "@/lib/rregullat";
 
 const PROBLEMET = ["Ekrani i thyer", "Bateria", "Nuk karikohet", "Kamera", "Ra në ujë", "Nuk ndizet", "Altoparlanti", "Softueri"];
 
@@ -32,15 +33,14 @@ export function FormaPranimit({ cmimet }: { cmimet: Cmim[] }) {
     .sort((a, b) => Number(Boolean(b.marka)) - Number(Boolean(a.marka)))
     .slice(0, 8);
 
-  function shtoProblemin(p: string) {
-    setProblemi((s) => {
-      if (s.toLocaleLowerCase("sq").includes(p.toLocaleLowerCase("sq"))) return s;
-      return s.trim() ? `${s.trim().replace(/[.,]$/, "")}, ${p.toLocaleLowerCase("sq")}` : p;
-    });
+  // Çipi dhe shablloni ndërrojnë: prekja e parë e shton problemin, e dyta e heq.
+  function ndryshoCipin(p: string) {
+    setProblemi((s) => ndryshoProblemin(s, p));
   }
   function zgjidhShabllonin(c: Cmim) {
-    shtoProblemin(c.problemi);
-    if (c.marka && !markaAktive) setMarka(c.marka);
+    const zgjedhur = kaProblemin(problemi, c.problemi);
+    ndryshoCipin(c.problemi);
+    if (!zgjedhur && c.marka && !markaAktive) setMarka(c.marka);
     setCmimiMeDore(false); setDataMeDore(false);
   }
 
@@ -64,7 +64,7 @@ export function FormaPranimit({ cmimet }: { cmimet: Cmim[] }) {
               <div className="chips chips--scroll chips--models" role="group" aria-label={`Modelet ${markaAktive}`}>
                 {modelet.map((m) => {
                   const emri = emriIPajisjes(markaAktive!, m);
-                  return <button key={m} type="button" className="chip" aria-pressed={pajisja === emri} onClick={() => setPajisja(emri)}>{m}</button>;
+                  return <button key={m} type="button" className="chip" aria-pressed={pajisja === emri} onClick={() => setPajisja(pajisja === emri ? "" : emri)}>{m}</button>;
                 })}
               </div>
             )}
@@ -80,8 +80,8 @@ export function FormaPranimit({ cmimet }: { cmimet: Cmim[] }) {
               onChange={(e) => setProblemi(e.target.value)} placeholder="Çfarë nuk punon?" />
             <div className="chips" style={{ marginTop: 6 }} role="group" aria-label="Problemet e shpeshta">
               {PROBLEMET.map((p) => (
-                <button key={p} type="button" className="chip" onClick={() => shtoProblemin(p)}
-                  aria-pressed={problemi.toLocaleLowerCase("sq").includes(p.toLocaleLowerCase("sq"))}>{p}</button>
+                <button key={p} type="button" className="chip" onClick={() => ndryshoCipin(p)}
+                  aria-pressed={kaProblemin(problemi, p)}>{p}</button>
               ))}
             </div>
           </div>
@@ -95,7 +95,7 @@ export function FormaPranimit({ cmimet }: { cmimet: Cmim[] }) {
           <div className="templates">
             {shabllonet.map((c) => (
               <button key={c.id} type="button" className="template" onClick={() => zgjidhShabllonin(c)}
-                aria-pressed={problemi.toLowerCase().includes(c.problemi.toLowerCase())}>
+                aria-pressed={kaProblemin(problemi, c.problemi)}>
                 <span className="template__title">{c.problemi}</span>
                 <span className="template__sub">{c.marka ?? "Çdo telefon"}{c.dite != null ? ` · ${c.dite === 0 ? "sot" : `${c.dite} ditë`}` : ""}</span>
                 <span className="template__price">{c.cmimi} €</span>

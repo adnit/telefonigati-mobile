@@ -132,6 +132,12 @@ export function Tabela({ riparimet }: { riparimet: Riparim[] }) {
                               <Ikona emri="djathtas" madhesia={16} trashesia={2.6} />
                             </button>
                           )}
+                          {k === "Gati për marrje" && (
+                            // Hapi i fundit: hap riparimin me fletën e nënshkrimit gati.
+                            <Link href={`/servisi/riparimi/${r.id}?marrja=1`} className="kcard__done" aria-label={`Klienti e mori ${r.pajisja}`}>
+                              <Ikona emri="rregull" madhesia={16} trashesia={2.8} />
+                            </Link>
+                          )}
                         </div>
                       </div>
                     </article>
