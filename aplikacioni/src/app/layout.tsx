@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Pwa from "@/components/Pwa";
 import { SKRIPTI_I_TEMES } from "@/components/Tema";
+import { Rifresko } from "@/components/Rifresko";
 
 export const metadata: Metadata = {
   // Adresa e plotë e faqes, që parapamja e linkut (WhatsApp, Viber) të gjejë foton.
@@ -36,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: SKRIPTI_I_TEMES }} />
       </head>
-      <body><Pwa />{children}</body>
+      <body><Pwa /><Rifresko />{children}</body>
     </html>
   );
 }

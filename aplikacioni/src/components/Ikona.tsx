@@ -34,6 +34,7 @@ const SHTEGET = {
   printo: <><path d="M6 9V2h12v7" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" rx="1" /></>,
   kapje: <><circle cx="9" cy="6" r="1.2" /><circle cx="15" cy="6" r="1.2" /><circle cx="9" cy="12" r="1.2" /><circle cx="15" cy="12" r="1.2" /><circle cx="9" cy="18" r="1.2" /><circle cx="15" cy="18" r="1.2" /></>,
   telefonGati: <><rect x="7.5" y="2.5" width="9" height="19" rx="2.2" /><path d="M10.9 4.9h2.2" /><path d="m9.9 12.3 1.6 1.6 2.8-3.2" /></>,
+  shigjetaPoshte: <path d="M12 5v14M6 13l6 6 6-6" />,
   tabela: <><rect x="3" y="4" width="5" height="16" rx="1.5" /><rect x="10" y="4" width="5" height="11" rx="1.5" /><rect x="17" y="4" width="4" height="7" rx="1.5" /></>,
   harte: <><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></>,
 } as const;

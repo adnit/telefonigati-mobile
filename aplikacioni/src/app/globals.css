@@ -1057,3 +1057,17 @@ main.main--wide { max-width: 1120px; }
 .group__link { font-size: 0.875rem; font-weight: 500; }
 .avatar--nav { width: 34px; height: 34px; font-size: 0.9375rem; background: linear-gradient(180deg, #5aa7ff, #0062cc); }
 .nav__icon--account { padding: 0; }
+
+/* Rifresko duke tërhequr poshtë: rreth xhami që zbret nga shiriti i sipërm */
+.ptr {
+  position: fixed; z-index: 85; left: 50%; top: calc(8px + env(safe-area-inset-top, 0px));
+  display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; pointer-events: none;
+  color: var(--accent);
+  background: var(--glass-shine), var(--glass-strong);
+  -webkit-backdrop-filter: blur(20px) saturate(190%); backdrop-filter: blur(20px) saturate(190%);
+  box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 0.5px var(--glass-rim), var(--glass-shadow);
+}
+.ptr--rifreskon, .ptr--mbaron { transition: transform 320ms var(--ease-sheet), opacity 200ms ease; }
+.ptr--mbaron { opacity: 0; }
+.ptr__icon { display: grid; place-items: center; transition: transform 80ms linear; }
+.ptr .spinner { width: 18px; height: 18px; }
