@@ -241,7 +241,7 @@ export default async function RiparimiIm({ params, searchParams }: {
                 <span className="row__title">Ruaje në llogarinë tënde</span>
                 <span className="row__sub">Opsionale: i gjen riparimet në çdo pajisje. Pa llogari, ky link punon njësoj.</span>
               </span>
-              <Hyrja brenda={false} pas={`/r/${r.kodi}`} />
+              <Hyrja brenda={false} kthehu={`/r/${r.kodi}`} />
             </div>
           )}
         </div>

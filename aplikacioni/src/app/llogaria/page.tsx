@@ -36,7 +36,7 @@ export default async function Llogaria({ searchParams }: { searchParams: Promise
           </div>
         </div>
         <div className="welcome__actions">
-          <Hyrja brenda={false} pas="/llogaria" />
+          <Hyrja brenda={false} />
           <Link className="btn btn--plain" href="/">Vazhdo pa llogari</Link>
         </div>
       </main>

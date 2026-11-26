@@ -14,8 +14,10 @@ function LogoGoogle() {
   );
 }
 
-// pas: ku kthehet përdoruesi pas hyrjes ose daljes (stafi te /servisi, klienti te /llogaria ose te riparimi).
-export default function Hyrja({ brenda, pas = "/servisi", teksti }: { brenda: boolean; pas?: string; teksti?: string }) {
+// Pas hyrjes përdoruesi shkon te faqja kryesore, që tregon panelin (stafi) ose riparimet e veta (klienti).
+// Përjashtim: nga faqja e një riparimi kthehet te ai riparim (kthehu), që ta ruajë menjëherë.
+// pas: ku shkon pas daljes.
+export default function Hyrja({ brenda, pas = "/servisi", kthehu = "/", teksti }: { brenda: boolean; pas?: string; kthehu?: string; teksti?: string }) {
   return brenda
     ? (
       <button type="button" className="row row--button row--danger" onClick={() => signOut({ callbackUrl: pas })}>
@@ -23,7 +25,7 @@ export default function Hyrja({ brenda, pas = "/servisi", teksti }: { brenda: bo
       </button>
     )
     : (
-      <button type="button" className="btn btn--white btn--block btn--large" onClick={() => signIn("google", { callbackUrl: pas })}>
+      <button type="button" className="btn btn--white btn--block btn--large" onClick={() => signIn("google", { callbackUrl: kthehu })}>
         <LogoGoogle /> Hyr me Google
       </button>
     );

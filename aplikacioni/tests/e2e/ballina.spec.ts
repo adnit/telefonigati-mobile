@@ -61,3 +61,19 @@ test("stafi nuk ka Riparimet e mia: as në faqen e parë, as te llogaria, as te 
   await expect(p.getByRole("link", { name: /Hape në panelin e servisit/ })).toBeVisible();
   await sql`DELETE FROM klientet_riparimet WHERE llogaria_id = ${STAFI}`;
 });
+
+test("hyrja me Google kthehet te faqja kryesore; nga faqja e riparimit, te riparimi", async ({ page }) => {
+  for (const faqja of ["/servisi", "/llogaria"]) {
+    await page.goto(faqja);
+    const kerkesa = page.waitForRequest((r) => r.url().includes("/api/auth/signin/google") && r.method() === "POST");
+    await page.getByRole("button", { name: "Hyr me Google" }).click();
+    const trupi = new URLSearchParams((await kerkesa).postData() ?? "");
+    expect(trupi.get("callbackUrl")).toBe("/");
+  }
+  const [r] = await sql`INSERT INTO riparimet (id, kodi, pajisja, problemi, dorezuar, statusi, cmimi)
+    VALUES (nextval('riparimet_nr')::text, replace(gen_random_uuid()::text, '-', ''), ${PREFIKSI + "Nova 11"}, 'Ekrani', current_date, 'Pranuar', 50) RETURNING kodi`;
+  await page.goto(`/r/${r.kodi}`);
+  const kerkesa = page.waitForRequest((x) => x.url().includes("/api/auth/signin/google") && x.method() === "POST");
+  await page.getByRole("button", { name: "Hyr me Google" }).click();
+  expect(new URLSearchParams((await kerkesa).postData() ?? "").get("callbackUrl")).toBe(`/r/${r.kodi}`);
+});
