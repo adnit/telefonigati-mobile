@@ -15,11 +15,11 @@ function LogoGoogle() {
 }
 
 // pas: ku kthehet përdoruesi pas hyrjes ose daljes (stafi te /servisi, klienti te /llogaria ose te riparimi).
-export default function Hyrja({ brenda, pas = "/servisi" }: { brenda: boolean; pas?: string }) {
+export default function Hyrja({ brenda, pas = "/servisi", teksti }: { brenda: boolean; pas?: string; teksti?: string }) {
   return brenda
     ? (
       <button type="button" className="row row--button row--danger" onClick={() => signOut({ callbackUrl: pas })}>
-        <Ikona emri="dil" madhesia={19} /> Dil nga llogaria
+        <Ikona emri="dil" madhesia={19} /> {teksti ?? "Dil nga llogaria"}
       </button>
     )
     : (

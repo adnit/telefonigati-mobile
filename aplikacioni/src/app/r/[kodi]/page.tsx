@@ -19,6 +19,8 @@ import { ruajRiparimin } from "@/app/llogaria/actions";
 import { eshteRuajtur } from "@/lib/klienti";
 import { profiliIm } from "@/lib/servisi";
 import Hyrja from "@/components/Hyrja";
+import { ButoniLlogarise } from "@/components/ButoniLlogarise";
+import { eshteStaf } from "@/lib/servisi";
 
 export const dynamic = "force-dynamic";
 
@@ -81,6 +83,8 @@ export default async function RiparimiIm({ params, searchParams }: {
   const ruajtur = profili ? await eshteRuajtur(profili.id, kodi).catch(() => false) : false;
 
   const mbyllur = r.statusi === "Marrë";
+  // Servisi pa emër të vendosur ("Servisi") dhe pa kontakte nuk i tregohet klientit si kartë bosh.
+  const kaServis = Boolean(servisi && (servisi.emri !== "Servisi" || servisi.telefoni || servisi.adresa || servisi.orari));
   const ngjyra = (c: string) => ({ "--icon-bg": c }) as React.CSSProperties;
 
   return (
@@ -89,9 +93,9 @@ export default async function RiparimiIm({ params, searchParams }: {
       <StatusLive statusi={r.statusi} />
       <div className="brandbar">
         <Marka />
-        <Link href="/llogaria" className="nav__icon" aria-label="Riparimet e mia"><Ikona emri="njeri" madhesia={20} /></Link>
+        <ButoniLlogarise emri={profili?.emri} />
       </div>
-      <PageTitle sipër={`Riparimi nr. ${r.id}${servisi ? ` · ${servisi.emri}` : ""}`} titulli={r.pajisja} nentitulli={r.problemi} />
+      <PageTitle sipër={`Riparimi nr. ${r.id}${kaServis ? ` · ${servisi!.emri}` : ""}`} titulli={r.pajisja} nentitulli={r.problemi} />
       <PaInternet perditesuar={r.perditesuar} />
 
       <section className="status-card" aria-label="Statusi">
@@ -180,7 +184,7 @@ export default async function RiparimiIm({ params, searchParams }: {
         </figure>
       )}
 
-      {servisi && (
+      {kaServis && servisi && (
         <section className="group shop" aria-label="Servisi">
           <div className="group__head"><h2>Servisi</h2></div>
           <div className="group__body">
@@ -211,7 +215,13 @@ export default async function RiparimiIm({ params, searchParams }: {
 
       <section className="group" aria-label="Riparimet e mia">
         <div className="group__body">
-          {ruajtur ? (
+          {profili && eshteStaf(profili) ? (
+            <Link className="row row--link row--icon" href={`/servisi/riparimi/${r.id}`}>
+              <span className="row__icon" style={ngjyra("linear-gradient(180deg, #3fd46b, #1b9440)")}><Ikona emri="celes" madhesia={16} /></span>
+              <span className="row__main"><span className="row__title">Hape në panelin e servisit</span><span className="row__sub">E sheh këtë sepse je staf.</span></span>
+              <Ikona emri="djathtas" madhesia={18} trashesia={2.4} className="chev" />
+            </Link>
+          ) : ruajtur ? (
             <Link className="row row--link row--icon" href="/llogaria">
               <span className="row__icon" style={ngjyra("var(--gati-fill)")}><Ikona emri="rregull" madhesia={16} trashesia={2.6} /></span>
               <span className="row__main"><span className="row__title">E ruajtur te Riparimet e mia</span></span>

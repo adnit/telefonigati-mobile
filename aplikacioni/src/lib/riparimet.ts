@@ -264,3 +264,14 @@ export async function lexoNenshkrimin(kush: { id: string } | { kodi: string }): 
     : await sql`SELECT nenshkrimi FROM riparimet WHERE kodi = ${kush.kodi}`;
   return (rows[0]?.nenshkrimi as string | null) ?? null;
 }
+
+// Numrat e punës për kartën e stafit në faqen kryesore.
+export async function numeroPunen(): Promise<{ neServis: number; gati: number; pret: number }> {
+  const sql = getSql();
+  const [r] = await sql`SELECT
+      count(*) FILTER (WHERE statusi <> 'Marrë')::int AS "neServis",
+      count(*) FILTER (WHERE statusi = 'Gati për marrje')::int AS gati,
+      count(*) FILTER (WHERE statusi <> 'Marrë' AND vendimi = 'pritje')::int AS pret
+    FROM riparimet`;
+  return r as { neServis: number; gati: number; pret: number };
+}

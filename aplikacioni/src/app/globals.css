@@ -1046,3 +1046,14 @@ main.main--wide { max-width: 1120px; }
 .repair-row__remove { flex: none; padding-right: 12px; }
 .alert--ok { background: color-mix(in srgb, var(--gati) 12%, var(--surface)); }
 .alert--ok svg { color: var(--gati); }
+
+/* Faqja kryesore e personalizuar */
+.welcome__alt { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+.welcome__alt .btn { justify-self: stretch; font-size: 0.9375rem; }
+.home-card__top { display: flex; align-items: center; gap: 14px; }
+.home-card__icon { flex: none; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 13px; color: #fff; background: linear-gradient(180deg, #3fd46b, #1b9440); }
+.home-card h2 { font-size: 1.125rem; }
+.home-card .btn-row { margin-top: 16px; }
+.group__link { font-size: 0.875rem; font-weight: 500; }
+.avatar--nav { width: 34px; height: 34px; font-size: 0.9375rem; background: linear-gradient(180deg, #5aa7ff, #0062cc); }
+.nav__icon--account { padding: 0; }

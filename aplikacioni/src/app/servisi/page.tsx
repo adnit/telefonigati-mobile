@@ -63,20 +63,19 @@ export default async function Servisi({ searchParams }: {
 
   if (!eshteStaf(p)) {
     return (
-      <main>
-        <section className="hero" style={{ paddingTop: "calc(56px + env(safe-area-inset-top, 0px))" }}>
-          <span className="avatar avatar--lg" aria-hidden="true">{[...p.emri][0]?.toUpperCase()}</span>
-          <h1>Llogaria nuk është ende e stafit</h1>
-          <p>Përshëndetje, {p.emri}. Pronari i servisit duhet ta aktivizojë llogarinë{p.email ? <> për <strong>{p.email}</strong></> : null}.</p>
-        </section>
-        <div className="group"><div className="group__body">
-          <Link className="row row--link row--icon" href="/llogaria">
-            <span className="row__icon" style={{ "--icon-bg": "#0a84ff" } as React.CSSProperties}><Ikona emri="njeri" madhesia={16} /></span>
-            <span className="row__main"><span className="row__title">Je klient? Riparimet e mia</span></span>
-            <Ikona emri="djathtas" madhesia={18} trashesia={2.4} className="chev" />
-          </Link>
-          <Hyrja brenda />
-        </div></div>
+      <main className="welcome">
+        <div className="welcome__body">
+          <header className="welcome__head">
+            <span className="avatar avatar--lg" aria-hidden="true">{[...p.emri][0]?.toUpperCase()}</span>
+            <h1>Llogaria nuk është ende e stafit</h1>
+            <p>{p.emri}{p.email ? ` · ${p.email}` : ""} është llogari klienti. Nëse punon në servis, pronari duhet ta ftojë këtë email te Cilësimet.</p>
+          </header>
+        </div>
+        <div className="welcome__actions">
+          <Link className="btn btn--primary btn--block btn--large" href="/llogaria"><Ikona emri="njeri" madhesia={19} />Riparimet e mia</Link>
+          <div className="group" style={{ marginTop: 10 }}><div className="group__body"><Hyrja brenda pas="/servisi" teksti="Dil dhe hyr me llogari tjetër" /></div></div>
+          <Link className="btn btn--plain" href="/">Faqja kryesore</Link>
+        </div>
       </main>
     );
   }
