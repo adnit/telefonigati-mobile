@@ -86,3 +86,16 @@ test("kokat e sigurisë dhe fotoja e stafit pa hyrje", async ({ request }) => {
   const id = await riparimProve();
   expect((await request.get(`/servisi/riparimi/${id}/foto`)).status()).toBe(403);
 });
+
+test("faqja e hapur e një riparimi të fshirë ndalon pyetjet, që rrjeti të mos bllokohet", async ({ browser }) => {
+  const id = await riparimProve();
+  const kodi = await kodiI(id);
+  const p = await (await browser.newContext()).newPage();
+  let pyetje = 0;
+  p.on("request", (r) => { if (r.url().includes(`/api/r/${kodi}/versioni`)) pyetje++; });
+  await p.goto(`/r/${kodi}`);
+  await sql`DELETE FROM riparimet WHERE id = ${id}`;
+  await p.waitForTimeout(10_000); // tri cikle të pyetjeve (çdo 3 sekonda)
+  expect(pyetje).toBe(1);
+  await p.context().close();
+});

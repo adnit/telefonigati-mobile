@@ -123,7 +123,8 @@
 html {
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
-  overscroll-behavior-y: none;
+  /* contain: shfletuesi nuk e rifreskon vetë faqen (këtë e bën Rifresko), por iPhone e ruan kërcimin e butë në skaje. */
+  overscroll-behavior-y: contain;
   background: var(--bg);
 }
 

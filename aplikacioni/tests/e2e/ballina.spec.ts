@@ -62,18 +62,20 @@ test("stafi nuk ka Riparimet e mia: as në faqen e parë, as te llogaria, as te 
   await sql`DELETE FROM klientet_riparimet WHERE llogaria_id = ${STAFI}`;
 });
 
-test("hyrja me Google kthehet te faqja kryesore; nga faqja e riparimit, te riparimi", async ({ page }) => {
-  for (const faqja of ["/servisi", "/llogaria"]) {
+test("hyrja me Google kthehet te faqja kryesore; nga faqja e riparimit, te riparimi", async ({ context }) => {
+  // Klikimi nis kalimin te Google; çdo rast në skedë të vet, që ngarkimet të mos përplasen.
+  async function callbackNga(faqja: string) {
+    const page = await context.newPage();
     await page.goto(faqja);
     const kerkesa = page.waitForRequest((r) => r.url().includes("/api/auth/signin/google") && r.method() === "POST");
     await page.getByRole("button", { name: "Hyr me Google" }).click();
-    const trupi = new URLSearchParams((await kerkesa).postData() ?? "");
-    expect(trupi.get("callbackUrl")).toBe("/");
+    const callback = new URLSearchParams((await kerkesa).postData() ?? "").get("callbackUrl");
+    await page.close();
+    return callback;
   }
+  expect(await callbackNga("/servisi")).toBe("/");
+  expect(await callbackNga("/llogaria")).toBe("/");
   const [r] = await sql`INSERT INTO riparimet (id, kodi, pajisja, problemi, dorezuar, statusi, cmimi)
     VALUES (nextval('riparimet_nr')::text, replace(gen_random_uuid()::text, '-', ''), ${PREFIKSI + "Nova 11"}, 'Ekrani', current_date, 'Pranuar', 50) RETURNING kodi`;
-  await page.goto(`/r/${r.kodi}`);
-  const kerkesa = page.waitForRequest((x) => x.url().includes("/api/auth/signin/google") && x.method() === "POST");
-  await page.getByRole("button", { name: "Hyr me Google" }).click();
-  expect(new URLSearchParams((await kerkesa).postData() ?? "").get("callbackUrl")).toBe(`/r/${r.kodi}`);
+  expect(await callbackNga(`/r/${r.kodi}`)).toBe(`/r/${r.kodi}`);
 });

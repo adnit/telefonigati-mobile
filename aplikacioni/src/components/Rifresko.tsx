@@ -31,6 +31,9 @@ export function Rifresko() {
         || t.closest(".signature, .kcard__grip, .board-tabs--drop, input, textarea, select")) { fillimi.current = null; return; }
       fillimi.current = { y: e.touches[0].clientY, aktiv: false };
       kaluarPragun.current = false;
+      // Dëgjuesi që mund ta ndalë lëvizjen shtohet vetëm tani, kur prekja nis në majë të faqes.
+      // Kështu lëvizja e zakonshme e faqes nuk pret kurrë JavaScript-in dhe mbetet e lëmuar.
+      window.addEventListener("touchmove", leviz, { passive: false });
     }
     function leviz(e: TouchEvent) {
       const f = fillimi.current;
@@ -49,6 +52,7 @@ export function Rifresko() {
       if (z < PRAGU) kaluarPragun.current = false;
     }
     function lesho() {
+      window.removeEventListener("touchmove", leviz);
       const f = fillimi.current;
       fillimi.current = null;
       if (!f?.aktiv) return;
@@ -63,7 +67,6 @@ export function Rifresko() {
       }
     }
     window.addEventListener("touchstart", nis, { passive: true });
-    window.addEventListener("touchmove", leviz, { passive: false });
     window.addEventListener("touchend", lesho);
     window.addEventListener("touchcancel", lesho);
     return () => {
